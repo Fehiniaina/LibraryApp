@@ -6,6 +6,7 @@ using Library.Application.Authors.Queries.GetAuthorsEager;
 using Library.Application.Authors.Queries.GetAuthorsLazy;
 using Library.Application.Authors.Queries.SearchAuthors;
 using Library.Application.Authors.Commands.UpdateAuthor;
+using Library.Application.Authors.Commands.CreateAuthorWithBook;
 using Library.Application.Authors.Common;
 using Library.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
@@ -85,5 +86,12 @@ app.MapPut("/authors/{id}", async (IMediator mediator, Guid id, UpdateAuthorDto 
     };
 });
 
+app.MapPost("/authors/with-book", async (IMediator mediator, CreateAuthorWithBookCommand command) =>
+{
+    var result = await mediator.Send(command);
+    return result.Success
+        ? Results.Created($"/authors/{result.AuthorId}", result)
+        : Results.Conflict(result.ErrorMessage);
+});
 
 app.Run();
