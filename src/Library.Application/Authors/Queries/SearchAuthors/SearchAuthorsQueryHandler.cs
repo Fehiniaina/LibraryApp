@@ -1,5 +1,6 @@
 using Library.Infrastructure.Persistence;
 using Library.Application.Authors.Common;
+using Library.Application.Shared;
 using Library.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

@@ -1,5 +1,6 @@
 // Authors/Queries/GetAuthorsEager/GetAuthorsEagerQuery.cs
 using Library.Application.Authors.Common;
+using Library.Application.Shared;
 using MediatR;
 
 namespace Library.Application.Authors.Queries.SearchAuthors;

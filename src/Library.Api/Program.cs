@@ -1,13 +1,15 @@
-using Library.Infrastructure.Persistence;
 using Library.Application.Authors.Commands.CreateAuthor;
+using Library.Application.Authors.Commands.UpdateAuthor;
+using Library.Application.Authors.Commands.CreateAuthorWithBook;
+using Library.Application.Authors.Common;
 using Library.Application.Authors.Queries.GetAllAuthors;
 using Library.Application.Authors.Queries.GetAuthorExplicit;
 using Library.Application.Authors.Queries.GetAuthorsEager;
 using Library.Application.Authors.Queries.GetAuthorsLazy;
 using Library.Application.Authors.Queries.SearchAuthors;
-using Library.Application.Authors.Commands.UpdateAuthor;
-using Library.Application.Authors.Commands.CreateAuthorWithBook;
-using Library.Application.Authors.Common;
+using Library.Application.Books.Queries.SearchExpensive;
+using Library.Api.Middleware;
+using Library.Infrastructure.Persistence;
 using Library.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using MediatR;
@@ -28,6 +30,8 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -36,7 +40,14 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<LibraryDbContext>();
     await db.Database.MigrateAsync();
-    await LibrarySeeder.SeedAsync(db, authorCount: 400);
+
+    bool forceReset = args.Contains("--reset-seed");
+    await LibrarySeeder.SeedAsync(
+        db,
+        authorCount: 400,
+        categoryCount: 50,
+        forceReset: forceReset
+    );
 }
 
 // app.UseHttpsRedirection(); // désactivé pour tests HTTP locaux
@@ -92,6 +103,17 @@ app.MapPost("/authors/with-book", async (IMediator mediator, CreateAuthorWithBoo
     return result.Success
         ? Results.Created($"/authors/{result.AuthorId}", result)
         : Results.Conflict(result.ErrorMessage);
+});
+
+app.MapGet("/book/search", async(
+    IMediator mediator,
+    decimal Price,
+    int page = 1,
+    int pageSize = 20) => 
+{
+    var result = await mediator.Send(new SearchExpensiveQuery(Price, page, pageSize));
+
+    return Results.Ok(result);
 });
 
 app.Run();

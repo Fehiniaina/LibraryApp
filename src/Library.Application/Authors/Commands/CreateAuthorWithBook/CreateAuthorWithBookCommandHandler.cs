@@ -1,6 +1,7 @@
 // src/Library.Application/Authors/Commands/CreateAuthorWithBook/CreateAuthorWithBookCommandHandler.cs
 using Library.Domain.Entities;
 using Library.Infrastructure.Persistence;
+using Library.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,7 +34,7 @@ public class CreateAuthorWithBookCommandHandler : IRequestHandler<CreateAuthorWi
             }
 
             // Étape 3 — seulement si la vérification passe, on insère le livre
-            var book = new Book(request.BookTitle, author);
+            var book = new Book(request.BookTitle, author, new Price(request.Price, request.Currency));
             _db.Books.Add(book);
             await _db.SaveChangesAsync(ct);
 
