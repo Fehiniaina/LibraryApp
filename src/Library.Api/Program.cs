@@ -4,6 +4,7 @@ using Library.Application.Authors.Queries.GetAllAuthors;
 using Library.Application.Authors.Queries.GetAuthorExplicit;
 using Library.Application.Authors.Queries.GetAuthorsEager;
 using Library.Application.Authors.Queries.GetAuthorsLazy;
+using Library.Application.Authors.Queries.SearchAuthors;
 using Library.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using MediatR;
@@ -57,5 +58,16 @@ app.MapGet("/authors/{id}/explicit", async (IMediator mediator, Guid id) =>
 
 app.MapGet("/authors/lazy", async(IMediator mediator) =>
     await mediator.Send(new GetAuthorsLazyQuery()));
+
+app.MapGet("/authors/search", async (
+    IMediator mediator,
+    string? lastName,
+    int? minBookCount,
+    int page = 1,
+    int pageSize = 20) =>
+{
+    var result = await mediator.Send(new SearchAuthorsQuery(lastName, minBookCount, page, pageSize));
+    return Results.Ok(result);
+});
 
 app.Run();
