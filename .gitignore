@@ -1,0 +1,14 @@
+# Visual Studio / Rider caches, user-specific files
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Build outputs
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+
+# Rider
+.idea/
