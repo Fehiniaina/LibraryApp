@@ -5,11 +5,16 @@ public class Book
     public Guid Id { get; private set; }
     public string Title { get; private set; } = default!;
     public Guid AuthorId { get; private set; }
+
+    // public virtual Author Author => lazy loading
     public Author Author { get; private set; } = default!;
 
     private readonly List<Category> _categories = new();
+
+    // public virtual IReadOnlyCollection<Category> Categories => lazy loading
     public IReadOnlyCollection<Category> Categories => _categories.AsReadOnly();
 
+    // Pour lazy loading : la constructeur doit etre protected pas private
     private Book() { }
 
     public Book(string title, Author author)

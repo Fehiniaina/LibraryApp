@@ -1,6 +1,9 @@
 using Library.Infrastructure.Persistence;
 using Library.Application.Authors.Commands.CreateAuthor;
 using Library.Application.Authors.Queries.GetAllAuthors;
+using Library.Application.Authors.Queries.GetAuthorExplicit;
+using Library.Application.Authors.Queries.GetAuthorsEager;
+using Library.Application.Authors.Queries.GetAuthorsLazy;
 using Library.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using MediatR;
@@ -8,6 +11,7 @@ using MediatR;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<LibraryDbContext>(options =>
+    // options.UseLazyLoadingProxies() // active le lazy loading
     options.UseSqlServer(builder.Configuration.GetConnectionString("LibraryDb"))
     .LogTo(Console.WriteLine, LogLevel.Information)
     .EnableSensitiveDataLogging());
@@ -41,5 +45,17 @@ app.MapPost("/authors", async (IMediator mediator, CreateAuthorCommand command) 
 
 app.MapGet("/authors", async (IMediator mediator) =>
     await mediator.Send(new GetAllAuthorsQuery()));
+
+app.MapGet("/authors/eager", async (IMediator mediator) =>
+    await mediator.Send(new GetAuthorsEagerQuery()));
+
+app.MapGet("/authors/{id}/explicit", async (IMediator mediator, Guid id) =>
+{
+    var result = await mediator.Send(new GetAuthorExplicitQuery(id));
+    return result is not null ? Results.Ok(result) : Results.NotFound();
+});
+
+app.MapGet("/authors/lazy", async(IMediator mediator) =>
+    await mediator.Send(new GetAuthorsLazyQuery()));
 
 app.Run();
