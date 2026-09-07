@@ -1,7 +1,7 @@
-// src/Library.Api/Endpoints/AuthorEndpoints.cs
 using Library.Application.Authors.Commands.CreateAuthor;
 using Library.Application.Authors.Commands.CreateAuthorWithBook;
 using Library.Application.Authors.Commands.UpdateAuthor;
+using Library.Application.Authors.Common;
 using Library.Application.Authors.Queries.GetAllAuthors;
 using Library.Application.Authors.Queries.GetAuthorExplicit;
 using Library.Application.Authors.Queries.GetAuthorsEager;
