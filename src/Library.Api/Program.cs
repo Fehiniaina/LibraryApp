@@ -5,6 +5,8 @@ using Library.Application.Authors.Queries.GetAuthorExplicit;
 using Library.Application.Authors.Queries.GetAuthorsEager;
 using Library.Application.Authors.Queries.GetAuthorsLazy;
 using Library.Application.Authors.Queries.SearchAuthors;
+using Library.Application.Authors.Commands.UpdateAuthor;
+using Library.Application.Authors.Common;
 using Library.Infrastructure.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using MediatR;
@@ -69,5 +71,19 @@ app.MapGet("/authors/search", async (
     var result = await mediator.Send(new SearchAuthorsQuery(lastName, minBookCount, page, pageSize));
     return Results.Ok(result);
 });
+
+app.MapPut("/authors/{id}", async (IMediator mediator, Guid id, UpdateAuthorDto dto) =>
+{
+    var result = await mediator.Send(new UpdateAuthorCommand(id, dto.FirstName, dto.LastName));
+    
+    return result switch
+    {
+        UpdateAuthorResult.Success => Results.NoContent(),
+        UpdateAuthorResult.NotFound => Results.NotFound(),
+        UpdateAuthorResult.Conflict => Results.Conflict("Cet auteur a été modifié par quelqu'un d'autre. Rechargez et réessayez."),
+        _ => Results.Problem()
+    };
+});
+
 
 app.Run();
