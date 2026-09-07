@@ -1,3 +1,4 @@
+using FluentValidation;
 using Library.Application.Authors.Commands.CreateAuthor;
 using Library.Application.Authors.Commands.UpdateAuthor;
 using Library.Application.Authors.Commands.CreateAuthorWithBook;
@@ -8,6 +9,7 @@ using Library.Application.Authors.Queries.GetAuthorsEager;
 using Library.Application.Authors.Queries.GetAuthorsLazy;
 using Library.Application.Authors.Queries.SearchAuthors;
 using Library.Application.Books.Queries.SearchExpensive;
+using Library.Application.Common.Behaviors;
 using Library.Api.Middleware;
 using Library.Infrastructure.Persistence;
 using Library.Infrastructure.Persistence.Seed;
@@ -22,8 +24,13 @@ builder.Services.AddDbContext<LibraryDbContext>(options =>
     .LogTo(Console.WriteLine, LogLevel.Information)
     .EnableSensitiveDataLogging());
 
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateAuthorCommand).Assembly));
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(CreateAuthorCommand).Assembly);
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
 
+builder.Services.AddValidatorsFromAssembly(typeof(CreateAuthorCommand).Assembly);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

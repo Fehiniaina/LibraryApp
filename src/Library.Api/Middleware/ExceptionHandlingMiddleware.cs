@@ -1,4 +1,5 @@
 // src/Library.Api/Middleware/ExceptionHandlingMiddleware.cs
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library.Api.Middleware;
@@ -19,6 +20,21 @@ public class ExceptionHandlingMiddleware
         try
         {
             await _next(context);
+        }
+        catch (ValidationException ex)
+        {
+            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage });
+
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            context.Response.ContentType = "application/problem+json";
+
+            await context.Response.WriteAsJsonAsync(new
+            {
+                title = "Une ou plusieurs erreurs de validation sont survenues.",
+                status = 400,
+                errors
+            });
+            return;
         }
         catch (Exception ex)
         {
