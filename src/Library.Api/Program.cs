@@ -3,6 +3,7 @@ using Library.Api.Endpoints;
 using Library.Api.Middleware;
 using Library.Application.Common.Behaviors;
 using Library.Domain.Interfaces;
+using Library.Infrastructure.Jobs;
 using Library.Infrastructure.Persistence;
 using Library.Infrastructure.Persistence.Seed;
 using Library.Infrastructure.Services;
@@ -14,6 +15,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Quartz;
+using Quartz.Impl;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -98,6 +101,29 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// Setup quartz
+builder.Services.AddQuartz(q =>
+{
+    var jobKey = new JobKey("RefreshTokenCleanupJob");
+
+    q.AddJob<RefreshTokenCleanupJob>(opts => opts.WithIdentity(jobKey));
+
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("RefreshTokenCleanupJob-trigger")
+        .WithCronSchedule("0 0 3 * * ?"));
+    //q.AddTrigger(opts => opts
+    //.ForJob(jobKey)
+    //.WithIdentity("RefreshTokenCleanupJob-trigger")
+    //.WithSimpleSchedule(x => x
+    //    .WithInterval(TimeSpan.FromSeconds(30))
+    //    .RepeatForever()));
+});
+
+builder.Services.AddQuartzHostedService(options =>
+{
+    options.WaitForJobsToComplete = true; // attend la fin des jobs en cours lors d'un arrêt propre de l'app
+});
 
 var app = builder.Build();
 
