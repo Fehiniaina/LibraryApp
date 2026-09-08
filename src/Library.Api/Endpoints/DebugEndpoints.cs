@@ -1,6 +1,7 @@
+using Library.Application.Authors.Common;
+using Library.Application.Shared;
 using Library.Domain.Common;
 using Library.Domain.Entities;
-using Library.Application.Shared;
 using Library.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -63,6 +64,16 @@ public static class DebugEndpoints
                 .ToListAsync();
 
             return titles;
+        });
+
+        group.MapGet("/exercice/2/4", async (LibraryDbContext db) =>
+        {
+            var result = await db.Authors
+                .Where(a => a.Books.Count > 5)
+                .OrderByDescending(a => a.Books.Count)
+                .Take(10)
+                .Select(a => new AuthorDto(a.Id, a.FirstName, a.LastName, a.Books.Count))
+                .ToListAsync();
         });
     }
 }
