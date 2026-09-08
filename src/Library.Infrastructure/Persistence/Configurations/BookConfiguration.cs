@@ -11,7 +11,7 @@ public class BookConfiguration : IEntityTypeConfiguration<Book>
         builder.HasKey(b => b.Id);
         builder.Property(b => b.Title).IsRequired().HasMaxLength(200);
         builder.HasMany(b => b.Categories)
-           .WithMany()
+           .WithMany(b => b.Books)
            .UsingEntity(j => j.ToTable("BookCategories"));
 
         builder.ComplexProperty(b => b.Price, price =>
