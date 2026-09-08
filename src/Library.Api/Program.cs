@@ -7,6 +7,7 @@ using Library.Infrastructure.Persistence;
 using Library.Infrastructure.Persistence.Seed;
 using Library.Infrastructure.Services;
 using Library.Infrastructure.Identity;
+using Library.Infrastructure.Persistence.Interceptors;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -17,10 +18,13 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<LibraryDbContext>(options =>
+builder.Services.AddSingleton<AuditInterceptor>(); // singleton
+
+builder.Services.AddDbContext<LibraryDbContext>((serviceProvider, options) =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("LibraryDb"))
     .LogTo(Console.WriteLine, LogLevel.Information)
-    .EnableSensitiveDataLogging());
+    .EnableSensitiveDataLogging()
+    .AddInterceptors(serviceProvider.GetRequiredService<AuditInterceptor>()));
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 
@@ -93,6 +97,7 @@ builder.Services.AddSwaggerGen(options =>
         [new OpenApiSecuritySchemeReference("Bearer", document)] = new List<string>()
     });
 });
+
 
 var app = builder.Build();
 
