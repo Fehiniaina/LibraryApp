@@ -15,7 +15,9 @@ public static class AuthorEndpoints
 {
     public static void MapAuthorEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/authors").WithTags("Authors");
+        var group = app.MapGroup("/authors")
+            .WithTags("Authors")
+            .RequireAuthorization();
 
         group.MapPost("/", async (IMediator mediator, CreateAuthorCommand command) =>
         {

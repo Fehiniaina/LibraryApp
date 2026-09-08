@@ -8,7 +8,9 @@ public static class BookEndpoints
 {
     public static void MapBookEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/books").WithTags("Books");
+        var group = app.MapGroup("/books")
+            .WithTags("Books")
+            .RequireAuthorization();
 
         group.MapGet("/search", async (
             IMediator mediator,
