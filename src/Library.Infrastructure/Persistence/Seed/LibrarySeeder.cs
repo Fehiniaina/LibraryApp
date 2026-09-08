@@ -1,17 +1,28 @@
 // src/Library.Infrastructure/Persistence/Seed/LibrarySeeder.cs
 using Bogus;
 using Library.Domain.Entities;
+using Library.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library.Infrastructure.Persistence.Seed;
 
 public static class LibrarySeeder
 {
-    public static async Task SeedAsync(LibraryDbContext db, int authorCount = 50, int categoryCount = 10)
+    public static async Task SeedAsync(
+        LibraryDbContext db,
+        int authorCount = 50,
+        int categoryCount = 10,
+        bool forceReset = false
+    )
     {
         Console.WriteLine(">>> SeedAsync called");
 
-        if (await db.Authors.AnyAsync()) // évite de reseeder si déjà peuplé
+        if (forceReset)
+        {
+            Console.WriteLine(">>> Force reset requested, clearing existing data");
+            await ClearAsync(db);
+        }
+        else if (await db.Authors.AnyAsync())
         {
             Console.WriteLine(">>> Authors already exist, skipping seed");
             return;
@@ -34,7 +45,11 @@ public static class LibrarySeeder
         var authors = authorFaker.Generate(authorCount);
 
         var bookFaker = new Faker<Book>()
-            .CustomInstantiator(f => new Book(f.Commerce.ProductName(), f.PickRandom(authors)));
+            .CustomInstantiator(f => new Book(
+                f.Commerce.ProductName(),
+                f.PickRandom(authors),
+                new Price(f.Random.Decimal(5, 50), "EUR")
+            ));
 
         var books = bookFaker.Generate(authorCount * 10); // ~10 livres par auteur en moyenne
 
@@ -51,5 +66,20 @@ public static class LibrarySeeder
         Console.WriteLine($">>> About to save {authors.Count} authors, {books.Count} books, {categories.Count} categories");
         await db.SaveChangesAsync();
         Console.WriteLine(">>> SaveChangesAsync completed successfully");
+    }
+
+    public static async Task ClearAsync(LibraryDbContext db)
+    {
+        // 1. La table de jointure Book-Category en premier (dépend des deux autres)
+        await db.Books
+            .SelectMany(b => b.Categories)
+            .ExecuteDeleteAsync(); // si la relation n'est pas directement supprimable ainsi, voir note ci-dessous
+
+        // 2. Books (dépend de Author)
+        await db.Books.ExecuteDeleteAsync();
+
+        // 3. Authors et Categories (plus aucune dépendance)
+        await db.Authors.ExecuteDeleteAsync();
+        await db.Categories.ExecuteDeleteAsync();
     }
 }

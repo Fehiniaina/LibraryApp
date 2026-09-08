@@ -5,7 +5,8 @@ public class Category
     public Guid Id { get; private set; }
     public string Name { get; private set; } = default!;
 
-    private Category() { }
+    // Pour lazy loading : la constructeur doit etre protected pas private
+    protected Category() { }
 
     public Category(string name)
     {

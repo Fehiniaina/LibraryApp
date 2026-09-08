@@ -13,5 +13,11 @@ public class BookConfiguration : IEntityTypeConfiguration<Book>
         builder.HasMany(b => b.Categories)
            .WithMany()
            .UsingEntity(j => j.ToTable("BookCategories"));
+
+        builder.ComplexProperty(b => b.Price, price =>
+        {
+            price.Property(p => p.Amount).HasColumnName("PriceAmount").HasColumnType("decimal(10,2)");
+            price.Property(p => p.Currency).HasColumnName("PriceCurrency").HasMaxLength(3);
+        });
     }
 }
