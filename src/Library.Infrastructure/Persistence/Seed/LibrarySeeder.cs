@@ -60,6 +60,11 @@ public static class LibrarySeeder
                 book.AddCategory(category);
         }
 
+        // Create fake data for company.
+        var companyFaker = new Faker<Company>()
+            .CustomInstantiator(f => new Company(f.Name.JobTitle()));
+        var companies = companyFaker.Generate(10);
+
         db.Authors.AddRange(authors);
         db.Books.AddRange(books);
 

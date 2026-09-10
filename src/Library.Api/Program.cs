@@ -1,25 +1,27 @@
-using Library.Application.Authors.Commands.CreateAuthor;
+using FluentValidation;
 using Library.Api.Endpoints;
 using Library.Api.Middleware;
+using Library.Application.Authors.Commands.CreateAuthor;
 using Library.Application.Common.Behaviors;
 using Library.Domain.Interfaces;
+using Library.Domain.Interfaces.Services;
+using Library.Infrastructure.ExternalServices;
+using Library.Infrastructure.Identity;
 using Library.Infrastructure.Jobs;
 using Library.Infrastructure.Persistence;
+using Library.Infrastructure.Persistence.Interceptors;
+using Library.Infrastructure.Persistence.Repositories;
 using Library.Infrastructure.Persistence.Seed;
 using Library.Infrastructure.Services;
-using Library.Infrastructure.Identity;
-using Library.Infrastructure.Persistence.Interceptors;
-using Library.Infrastructure.ExternalServices;
-using FluentValidation;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Polly;
-using Polly.Retry;
 using Polly.CircuitBreaker;
+using Polly.Retry;
 using Quartz;
 using Quartz.Impl;
 using System.Text;
@@ -193,6 +195,11 @@ builder.Services.AddOptions<ExternalStatusApiOptions>()
     .ValidateDataAnnotations()
     .ValidateOnStart(); // échoue au DÉMARRAGE de l'app si la config est invalide, pas au premier usage
 
+// Register respository
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -224,5 +231,6 @@ app.MapAuthorEndpoints();
 app.MapBookEndpoints();
 app.MapExternalEndpoints();
 app.MapDebugEndpoints();
+app.MapCustomerEndpoints();
 
 app.Run();

@@ -5,7 +5,6 @@ using Library.Infrastructure.Persistence;
 using Library.Tests.TestHelpers;
 using Microsoft.EntityFrameworkCore;
 using FluentAssertions;
-using Xunit;
 
 namespace Library.Tests.Authors.Commands;
 
@@ -49,7 +48,7 @@ public class CreateAuthorWithBookCommandHandlerTests : IAsyncLifetime
         var command = new CreateAuthorWithBookCommand("Nouvel", "Auteur", "Titre Unique Test", 15, "EUR");
 
         var result = await handler.Handle(command, CancellationToken.None);
-
+         
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("existe déjà");
 
