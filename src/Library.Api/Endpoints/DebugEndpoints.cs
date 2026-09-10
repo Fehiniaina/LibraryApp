@@ -75,6 +75,17 @@ public static class DebugEndpoints
                 .Select(a => new AuthorDto(a.Id, a.FirstName, a.LastName, a.Books.Count))
                 .ToListAsync();
         });
+
+        group.MapGet("/exercice/2/5", async (LibraryDbContext db) =>
+        {
+            var result = await db.Authors
+                .GroupBy(a => a.LastName.Substring(0, 1))
+                .Select(a => new { FirstLetter = a.Key, Count = a.Count() })
+                .OrderBy(a => a.FirstLetter)
+                .ToListAsync();
+
+            return result;
+        });
     }
 }
 

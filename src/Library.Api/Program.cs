@@ -29,7 +29,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<AuditInterceptor>(); // singleton
 
 builder.Services.AddDbContext<LibraryDbContext>((serviceProvider, options) =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("LibraryDb"))
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("LibraryDb"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure(maxRetryCount: 0)
+    )
     .LogTo(Console.WriteLine, LogLevel.Information)
     .EnableSensitiveDataLogging()
     .AddInterceptors(serviceProvider.GetRequiredService<AuditInterceptor>()));
@@ -204,7 +207,13 @@ if (app.Environment.IsDevelopment())
     await db.Database.MigrateAsync();
 
     bool forceReset = args.Contains("--reset-seed");
-    await LibrarySeeder.SeedAsync(db, authorCount: 400, categoryCount: 50, forceReset: forceReset);
+    await LibrarySeeder.SeedAsync(db, authorCount: 10000, categoryCount: 50, forceReset: forceReset);
+
+    // Seed massif SÉPARÉ — seulement si demandé explicitement, JAMAIS avec --reset-seed en même temps
+    if (args.Contains("--bulk-seed"))
+    {
+        await BulkVolumeSeeder.SeedLargeVolumeAsync(db, authorCount: 10000);
+    }
 }
 
 app.UseAuthentication();
