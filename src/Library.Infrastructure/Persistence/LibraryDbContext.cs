@@ -13,6 +13,8 @@ public class LibraryDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Book> Books => Set<Book>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<Company> Companies => Set<Company>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
