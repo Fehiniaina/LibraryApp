@@ -224,5 +224,6 @@ app.MapAuthorEndpoints();
 app.MapBookEndpoints();
 app.MapExternalEndpoints();
 app.MapDebugEndpoints();
+app.MapCustomerEndpoints();
 
 app.Run();

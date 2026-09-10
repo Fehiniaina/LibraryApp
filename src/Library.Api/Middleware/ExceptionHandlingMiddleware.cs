@@ -1,5 +1,6 @@
 // src/Library.Api/Middleware/ExceptionHandlingMiddleware.cs
 using FluentValidation;
+using Library.Application.Customers.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library.Api.Middleware;
@@ -42,6 +43,7 @@ public class ExceptionHandlingMiddleware
 
             var (statusCode, title) = ex switch
             {
+                CompanyNotFoundException => (StatusCodes.Status404NotFound, ex.Message),
                 DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "Conflit de concurrence."),
                 InvalidOperationException => (StatusCodes.Status400BadRequest, "Requête invalide."),
                 ArgumentException => (StatusCodes.Status400BadRequest, ex.Message), // souvent sûr d'exposer (validation métier)
