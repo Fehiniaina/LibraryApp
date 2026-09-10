@@ -1,4 +1,4 @@
-// Authors/Queries/GetAllAuthors/GetAllAuthorsQueryHandler.cs
+using Library.Application.Authors.Common;
 using Library.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

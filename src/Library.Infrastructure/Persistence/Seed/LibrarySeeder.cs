@@ -70,15 +70,9 @@ public static class LibrarySeeder
 
     public static async Task ClearAsync(LibraryDbContext db)
     {
-        // 1. La table de jointure Book-Category en premier (dépend des deux autres)
-        await db.Books
-            .SelectMany(b => b.Categories)
-            .ExecuteDeleteAsync(); // si la relation n'est pas directement supprimable ainsi, voir note ci-dessous
-
-        // 2. Books (dépend de Author)
+        // Supprime directement la table de jointure via SQL brut, plus fiable pour une relation N-N
+        await db.Database.ExecuteSqlRawAsync("DELETE FROM BookCategories");
         await db.Books.ExecuteDeleteAsync();
-
-        // 3. Authors et Categories (plus aucune dépendance)
         await db.Authors.ExecuteDeleteAsync();
         await db.Categories.ExecuteDeleteAsync();
     }
