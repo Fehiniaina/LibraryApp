@@ -1,6 +1,6 @@
 // src/Library.Api/Middleware/ExceptionHandlingMiddleware.cs
 using FluentValidation;
-using Library.Application.Customers.Exceptions;
+using Library.Domain.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library.Api.Middleware;

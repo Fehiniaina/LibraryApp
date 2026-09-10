@@ -1,6 +1,6 @@
-﻿using Library.Application.Authors.Commands.CreateAuthorWithBook;
-using Library.Application.Customers.Exceptions;
-using Library.Domain.Entities;
+﻿using Library.Domain.Entities;
+using Library.Domain.Exceptions;
+using Library.Domain.Interfaces.Services;
 using Library.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +10,13 @@ namespace Library.Application.Customers.Commands.CreateCustomer
     public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerCommand, CreateCustomerResult>
     {
         private readonly LibraryDbContext _db;
-        public CreateCustomerCommandHandler(LibraryDbContext db) => _db = db;
+        private readonly ICustomerService _customerService;
+
+        public CreateCustomerCommandHandler(LibraryDbContext db, ICustomerService customerService)
+        {
+            _db = db;
+            _customerService = customerService;
+        }
 
         public async Task<CreateCustomerResult> Handle(CreateCustomerCommand request, CancellationToken ct)
         {
@@ -18,13 +24,14 @@ namespace Library.Application.Customers.Commands.CreateCustomer
 
             try
             {
-                // Etape 1 : On verifie l'existence du company.
-                var company = await _db.Companies.FirstOrDefaultAsync(c => c.Id == request.CompanyId, ct);
-                if (null == company) throw new CompanyNotFoundException(request.CompanyId);
+                var customer = await _customerService.CreateCustomerAsync(
+                        request.Name,
+                        request.CompanyId,
+                        request.CreditLimit,
+                        ct
+                );
 
-                var customer = new Customer(request.Name, company, request.CreditLimit);
-                _db.Add(customer);
-                await _db.SaveChangesAsync(ct);
+                var company = await _db.Companies.FirstOrDefaultAsync(c => c.Id == request.CompanyId, ct);
 
                 await transaction.CommitAsync(ct);
                 return new CreateCustomerResult(true, customer.Id, null);

@@ -1,4 +1,4 @@
-﻿namespace Library.Application.Customers.Exceptions
+﻿namespace Library.Domain.Exceptions
 {
     public class CompanyNotFoundException : Exception
     {
