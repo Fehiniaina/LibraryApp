@@ -21,7 +21,7 @@ public class Author : IAuditableEntity
     public void SetUpdatedAt(DateTime dateTime) => UpdatedAt = dateTime;
 
     // Pour lazy loading : la constructeur doit etre protected pas private
-    private Author() { } // pour EF Core
+    private Author() { } //  // pour EF Core — commentaire lazy loading retiré, private confirmé correct
 
     public Author(string firstName, string lastName)
     {

@@ -18,7 +18,7 @@ public class Book
     public IReadOnlyCollection<Category> Categories => _categories.AsReadOnly();
 
     // Pour lazy loading : la constructeur doit etre protected pas private
-    public Book() { }
+    private Book() { }
 
     public Book(string title, Author author, Price price)
     {

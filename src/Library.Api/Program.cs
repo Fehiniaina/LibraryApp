@@ -39,6 +39,18 @@ builder.Services.AddDbContext<LibraryDbContext>((serviceProvider, options) =>
     .EnableSensitiveDataLogging()
     .AddInterceptors(serviceProvider.GetRequiredService<AuditInterceptor>()));
 
+// Using DbContextFactory : such as backgound services, multi-threaded applications, or factories that create services.
+//builder.Services.AddDbContextFactory<LibraryDbContext>((serviceProvider, options) => 
+//{
+//    options.UseSqlServer(
+//        builder.Configuration.GetConnectionString("LibraryDb"),
+//        sqlOptions => sqlOptions.EnableRetryOnFailure(maxRetryCount: 0)
+//    )
+//    .LogTo(Console.WriteLine, LogLevel.Information)
+//    .EnableSensitiveDataLogging()
+//    .AddInterceptors(serviceProvider.GetRequiredService<AuditInterceptor>());
+//});
+
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -200,6 +212,9 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ICategoryCacheService, CategoryCacheService>();
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -232,5 +247,6 @@ app.MapBookEndpoints();
 app.MapExternalEndpoints();
 app.MapDebugEndpoints();
 app.MapCustomerEndpoints();
+app.MapCategoriesEndpoints();
 
 app.Run();

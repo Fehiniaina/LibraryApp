@@ -21,10 +21,11 @@ public class SearchExpensiveHandler : IRequestHandler<SearchExpensiveQuery, Page
 
         IQueryable<Book> query = _db.Books.AsNoTracking();
 
-        if (request.Price > 0)
+        query = request.Price switch
         {
-            query = query.Where(o => o.Price.Amount >= request.Price);
-        }
+            > 0 => query.Where(o => o.Price.Amount >= request.Price),
+            _ => query
+        };
 
         var totalCount = await query.CountAsync(ct);
 

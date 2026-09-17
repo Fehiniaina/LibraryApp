@@ -8,7 +8,7 @@
         private readonly List<Customer> _customers = new();
         public virtual IReadOnlyCollection<Customer> Customers => _customers.AsReadOnly();
 
-        protected Company() { }
+        private Company() { }
 
         public Company(string name)
         {

@@ -10,7 +10,7 @@ namespace Library.Domain.Entities
         public virtual Company Company { get; private set; } = default!;
         public Money CreditLimit { get; private set; } = default!;
 
-        protected Customer() { }
+        private Customer() { }
 
         public Customer(string name, Company company, Money creditLimit)
         {
