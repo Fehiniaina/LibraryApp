@@ -1,6 +1,6 @@
 using Library.Infrastructure.Persistence;
 using Library.Application.Authors.Common;
-using Library.Application.Shared;
+using Library.Application.Shareds;
 using Library.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +12,7 @@ public class SearchAuthorsQueryHandler : IRequestHandler<SearchAuthorsQuery, Pag
     private readonly LibraryDbContext _db;
     public SearchAuthorsQueryHandler(LibraryDbContext db) => _db = db;
 
-    public async Task<PagedResult<AuthorDto>> Handle(SearchAuthorsQuery request, CancellationToken ct)
+    public async Task<PagedResult<AuthorDto>> Handle(SearchAuthorsQuery request, CancellationToken cancellationToken)
     {
         const int MaxPageSize = 100;
         var pageSize = Math.Clamp(request.PageSize, 1, MaxPageSize);
@@ -30,14 +30,14 @@ public class SearchAuthorsQueryHandler : IRequestHandler<SearchAuthorsQuery, Pag
             query = query.Where(author => author.Books.Count >= request.MinBookCount);
         }
 
-        var totalCount = await query.CountAsync(ct);
+        var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
             .OrderBy(a => a.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(a => new AuthorDto(a.Id, a.FirstName, a.LastName, a.Books.Count))
-            .ToListAsync(ct);
+            .ToListAsync(cancellationToken);
 
         return new PagedResult<AuthorDto>(items, totalCount, page, pageSize);
     }

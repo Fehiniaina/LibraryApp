@@ -1,13 +1,15 @@
 using Library.Application.Authors.Common;
-using Library.Application.Shared;
 using Library.Domain.Common;
-using Library.Domain.Entities;
 using Library.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library.Api.Endpoints;
 
-public static class DebugEndpoints
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Performance",
+    "CA1812:Avoid uninstantiated internal classes",
+    Justification = "Classe statique enregistrée via extension method — jamais instanciée directement.")]
+internal static class DebugEndpoints
 {
     public static void MapDebugEndpoints(this WebApplication app)
     {
@@ -18,7 +20,8 @@ public static class DebugEndpoints
         {
             var authors = await db.Authors
                 .Where(a => a.LastName == lastName)
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             try
             {
@@ -43,15 +46,17 @@ public static class DebugEndpoints
                         : null
                     )
                 )
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
         });
 
         group.MapGet("/exercice/2/2", async (LibraryDbContext db) =>
         {
             var titles = await db.Authors
-                .Where(a => a.LastName.StartsWith("H"))
+                .Where(a => a.LastName.StartsWith('H'))
                 .SelectMany(a => a.Books.Select(b => b.Title))
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             return titles;
         });
@@ -61,7 +66,8 @@ public static class DebugEndpoints
             var titles = await db.Categories
                 .Select(c => new { c.Name, BookCount = c.Books.Count })
                 .OrderByDescending(c => c.BookCount)
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             return titles;
         });
@@ -73,7 +79,8 @@ public static class DebugEndpoints
                 .OrderByDescending(a => a.Books.Count)
                 .Take(10)
                 .Select(a => new AuthorDto(a.Id, a.FirstName, a.LastName, a.Books.Count))
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false); ;
         });
 
         group.MapGet("/exercice/2/5", async (LibraryDbContext db) =>
@@ -82,11 +89,12 @@ public static class DebugEndpoints
                 .GroupBy(a => a.LastName.Substring(0, 1))
                 .Select(a => new { FirstLetter = a.Key, Count = a.Count() })
                 .OrderBy(a => a.FirstLetter)
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false); ;
 
             return result;
         });
     }
 }
 
-public record AuthorTopBookDto(string FullName, string? MostExpensiveBookTitle);
+sealed record AuthorTopBookDto(string FullName, string? MostExpensiveBookTitle);

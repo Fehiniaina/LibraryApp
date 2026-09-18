@@ -1,7 +1,6 @@
 // src/Library.Infrastructure/Persistence/Interceptors/AuditInterceptor.cs
 using Library.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Library.Infrastructure.Persistence.Interceptors;
@@ -19,13 +18,13 @@ public class AuditInterceptor : SaveChangesInterceptor
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
         InterceptionResult<int> result,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         UpdateAuditFields(eventData.Context);
-        return base.SavingChangesAsync(eventData, result, ct);
+        return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
-    private void UpdateAuditFields(DbContext? context)
+    private static void UpdateAuditFields(DbContext? context)
     {
         if (context is null) return;
 

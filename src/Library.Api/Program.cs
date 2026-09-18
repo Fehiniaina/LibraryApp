@@ -23,7 +23,6 @@ using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
 using Quartz;
-using Quartz.Impl;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -200,6 +199,9 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ICategoryCacheService, CategoryCacheService>();
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -211,15 +213,15 @@ if (app.Environment.IsDevelopment())
 
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<LibraryDbContext>();
-    await db.Database.MigrateAsync();
+    await db.Database.MigrateAsync().ConfigureAwait(false);
 
     bool forceReset = args.Contains("--reset-seed");
-    await LibrarySeeder.SeedAsync(db, authorCount: 10000, categoryCount: 50, forceReset: forceReset);
+    await LibrarySeeder.SeedAsync(db, authorCount: 10000, categoryCount: 50, forceReset: forceReset).ConfigureAwait(false);
 
     // Seed massif SÉPARÉ — seulement si demandé explicitement, JAMAIS avec --reset-seed en même temps
     if (args.Contains("--bulk-seed"))
     {
-        await BulkVolumeSeeder.SeedLargeVolumeAsync(db, authorCount: 10000);
+        await BulkVolumeSeeder.SeedLargeVolumeAsync(db, authorCount: 10000).ConfigureAwait(false);
     }
 }
 
@@ -232,5 +234,6 @@ app.MapBookEndpoints();
 app.MapExternalEndpoints();
 app.MapDebugEndpoints();
 app.MapCustomerEndpoints();
+app.MapCategoriesEndpoints();
 
 app.Run();

@@ -1,5 +1,5 @@
 using Library.Application.Books.Common;
-using Library.Application.Shared;
+using Library.Application.Shareds;
 using MediatR;
 
 namespace Library.Application.Books.Queries.SearchExpensive;

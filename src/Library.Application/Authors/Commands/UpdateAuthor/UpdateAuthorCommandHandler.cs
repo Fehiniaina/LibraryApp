@@ -10,10 +10,10 @@ public class UpdateAuthorCommandHandler : IRequestHandler<UpdateAuthorCommand, U
     private readonly LibraryDbContext _db;
     public UpdateAuthorCommandHandler(LibraryDbContext db) => _db = db;
 
-    public async Task<UpdateAuthorResult> Handle(UpdateAuthorCommand request, CancellationToken ct)
+    public async Task<UpdateAuthorResult> Handle(UpdateAuthorCommand request, CancellationToken cancellationToken)
     {
         // Pas de AsNoTracking ici — on VEUT que le Change Tracker suive cette entité
-        var author = await _db.Authors.FirstOrDefaultAsync(a => a.Id == request.Id, ct);
+        var author = await _db.Authors.FirstOrDefaultAsync(a => a.Id == request.Id, cancellationToken);
         if (author is null) return UpdateAuthorResult.NotFound;
 
         author.UpdateName(request.FirstName, request.LastName);
@@ -21,7 +21,7 @@ public class UpdateAuthorCommandHandler : IRequestHandler<UpdateAuthorCommand, U
 
         try
         {
-            await _db.SaveChangesAsync(ct);
+            await _db.SaveChangesAsync(cancellationToken);
             return UpdateAuthorResult.Success;
         }
         catch(DbUpdateConcurrencyException)

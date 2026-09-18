@@ -1,38 +1,55 @@
-using Library.Domain.Interfaces;
-
 namespace Library.Domain.Entities;
+
+using Library.Domain.Interfaces;
 
 public class Author : IAuditableEntity
 {
-    public Guid Id { get; private set; }
-    public string FirstName { get; private set; } = default!;
-    public string LastName { get; private set; } = default!;
+    private readonly List<Book> _books = new ();
 
-    private readonly List<Book> _books = new();
-    // Pour lazy loading : la propriété Books doit être virtual
-    public IReadOnlyCollection<Book> Books => _books.AsReadOnly();
+    public Author(string firstName, string lastName)
+    {
+        this.Id = Guid.NewGuid();
+        this.FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
+        this.LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
+    }
+
+    private Author()
+    {
+    }
+
+    // ─── Propriétés publiques ─────────────────────────────────────────────────
+    public Guid Id { get; private set; }
+
+    public string FirstName { get; private set; } = default!;
+
+    public string LastName { get; private set; } = default!;
 
     public byte[] RowVersion { get; private set; } = default!;
 
     public DateTime CreatedAt { get; private set; }
+
     public DateTime? UpdatedAt { get; private set; }
 
-    public void SetCreatedAt(DateTime dateTime) => CreatedAt = dateTime;
-    public void SetUpdatedAt(DateTime dateTime) => UpdatedAt = dateTime;
+    /// <summary>
+    /// Gets Collection des livres associés à cet auteur.
+    /// </summary>
+    public IReadOnlyCollection<Book> Books => this._books.AsReadOnly();
 
-    // Pour lazy loading : la constructeur doit etre protected pas private
-    private Author() { } // pour EF Core
+    /// <inheritdoc/>
+    public void SetCreatedAt(DateTime dateTime) => this.CreatedAt = dateTime;
 
-    public Author(string firstName, string lastName)
-    {
-        Id = Guid.NewGuid();
-        FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
-        LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
-    }
+    /// <inheritdoc/>
+    public void SetUpdatedAt(DateTime dateTime) => this.UpdatedAt = dateTime;
 
+    /// <summary>
+    /// Met à jour le prénom et le nom de l'auteur.
+    /// </summary>
+    /// <param name="firstName">Nouveau prénom.</param>
+    /// <param name="lastName">Nouveau nom.</param>
+    /// <exception cref="ArgumentNullException">Levée si l'un des paramètres est null.</exception>
     public void UpdateName(string firstName, string lastName)
     {
-        FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
-        LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
+        this.FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
+        this.LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
     }
 }

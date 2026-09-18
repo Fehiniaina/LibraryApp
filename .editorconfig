@@ -1,0 +1,35 @@
+root = true
+
+[*.cs]
+# Indentation
+indent_style = space
+indent_size = 4
+
+# Namespaces — style file-scoped (modern C#)
+csharp_style_namespace_declarations = file_scoped:warning
+
+# var préféré quand le type est évident
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+
+# Membres privés avec underscore
+dotnet_naming_rule.private_fields_should_be_camel_case.symbols = private_fields
+dotnet_naming_rule.private_fields_should_be_camel_case.style = underscore_camel_case
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+
+# Supprimer les usings inutiles
+dotnet_diagnostic.IDE0005.severity = warning
+
+dotnet_diagnostic.CA1054.severity = none
+dotnet_diagnostic.CA1062.severity = none
+dotnet_diagnostic.SA1101.severity = none
+dotnet_diagnostic.SA1309.severity = none
+dotnet_diagnostic.CS1591.severity = none
+dotnet_diagnostic.SA1600.severity = none
+dotnet_diagnostic.SA1633.severity = none
+dotnet_diagnostic.CA1819.severity = none
+dotnet_diagnostic.CA1849.severity = none
+dotnet_diagnostic.CA2007.severity = none

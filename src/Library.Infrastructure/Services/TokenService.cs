@@ -1,15 +1,13 @@
 // src/Library.Infrastructure/Services/TokenService.cs
+namespace Library.Infrastructure.Services;
+
 using Library.Domain.Interfaces;
-using Library.Domain.Entities;
-using Library.Infrastructure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-
-namespace Library.Infrastructure.Services;
 
 public class TokenService : ITokenService
 {

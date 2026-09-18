@@ -17,17 +17,17 @@ public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
     public async Task<TResponse> Handle(
         TRequest request,
         RequestHandlerDelegate<TResponse> next,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         if (!_validators.Any())
         {
-            return await next(); // aucune règle définie pour cette Query/Command → on passe directement
+            return await next(cancellationToken); // aucune règle définie pour cette Query/Command → on passe directement
         }
 
         var context = new ValidationContext<TRequest>(request);
 
         var failures = (await Task.WhenAll(
-            _validators.Select(v => v.ValidateAsync(context, ct))))
+            _validators.Select(v => v.ValidateAsync(context, cancellationToken))))
             .SelectMany(result => result.Errors)
             .Where(f => f is not null)
             .ToList();
@@ -37,6 +37,6 @@ public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
             throw new ValidationException(failures);
         }
 
-        return await next(); // validation passée → continue vers le vrai Handler
+        return await next(cancellationToken); // validation passée → continue vers le vrai Handler
     }
 }

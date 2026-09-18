@@ -10,7 +10,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
     private readonly UserManager<ApplicationUser> _userManager;
     public RegisterCommandHandler(UserManager<ApplicationUser> userManager) => _userManager = userManager;
 
-    public async Task<RegisterResult> Handle(RegisterCommand request, CancellationToken ct)
+    public async Task<RegisterResult> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
         var user = new ApplicationUser
         {

@@ -11,7 +11,7 @@ using MediatR;
 
 namespace Library.Api.Endpoints;
 
-public static class AuthorEndpoints
+internal static class AuthorEndpoints
 {
     public static void MapAuthorEndpoints(this WebApplication app)
     {
