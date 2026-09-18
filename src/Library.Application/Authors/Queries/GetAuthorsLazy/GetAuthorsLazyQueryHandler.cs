@@ -11,13 +11,13 @@ public class GetAuthorsLazyQueryHandler : IRequestHandler<GetAuthorsLazyQuery, L
     private readonly LibraryDbContext _db;
     public GetAuthorsLazyQueryHandler(LibraryDbContext db) => _db = db;
 
-    public async Task<List<AuthorWithBooksDto>> Handle(GetAuthorsLazyQuery request, CancellationToken ct)
+    public async Task<List<AuthorWithBooksDto>> Handle(GetAuthorsLazyQuery request, CancellationToken cancellationToken)
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
 
         // Une seule requête ici — en apparence anodin
         // Lazy loading ne fonctionne pas avec AsNoTracking() contrairement a Eager
-        var authors = await _db.Authors.ToListAsync(ct);
+        var authors = await _db.Authors.ToListAsync(cancellationToken);
 
         var result = new List<AuthorWithBooksDto>();
         foreach (var author in authors)

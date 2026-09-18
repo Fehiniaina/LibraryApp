@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Library.Api.Endpoints;
 
-public static class BookEndpoints
+internal static class BookEndpoints
 {
     public static void MapBookEndpoints(this WebApplication app)
     {
@@ -18,7 +18,7 @@ public static class BookEndpoints
             int page = 1,
             int pageSize = 20) =>
         {
-            var result = await mediator.Send(new SearchExpensiveQuery(price, page, pageSize));
+            var result = await mediator.Send(new SearchExpensiveQuery(price, page, pageSize)).ConfigureAwait(false);
             return Results.Ok(result);
         });
     }

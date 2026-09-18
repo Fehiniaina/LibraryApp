@@ -1,20 +1,27 @@
-﻿namespace Library.Domain.Exceptions
+﻿namespace Library.Domain.Exceptions;
+
+public class CompanyNotFoundException : Exception
 {
-    public class CompanyNotFoundException : Exception
+    public CompanyNotFoundException()
+        : base()
     {
-        public Guid? CompanyId { get; private set; }
-
-        public CompanyNotFoundException() : base() { }
-
-        public CompanyNotFoundException(string? message) : base(message) { }
-
-        public CompanyNotFoundException(string message, Exception innerException):
-            base(message, innerException) { }
-
-        public CompanyNotFoundException(Guid companyId)
-        : base($"Company with id '{companyId}' was not found.")
-        {
-            CompanyId = companyId;
-        }
     }
+
+    public CompanyNotFoundException(string? message)
+        : base(message)
+    {
+    }
+
+    public CompanyNotFoundException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+
+    public CompanyNotFoundException(Guid companyId)
+        : base($"Company with id '{companyId}' was not found.")
+    {
+        this.CompanyId = companyId;
+    }
+
+    public Guid? CompanyId { get; private set; }
 }

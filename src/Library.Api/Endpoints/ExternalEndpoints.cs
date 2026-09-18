@@ -2,7 +2,7 @@ using Library.Domain.Interfaces;
 
 namespace Library.Api.Endpoints;
 
-public static class ExternalEndpoints
+internal static class ExternalEndpoints
 {
     public static void MapExternalEndpoints(this WebApplication app)
     {
@@ -11,12 +11,12 @@ public static class ExternalEndpoints
         {
             try
             {
-                var success = await client.CheckStatusAsync(CancellationToken.None);
+                var success = await client.CheckStatusAsync(CancellationToken.None).ConfigureAwait(false);
                 return Results.Ok(new { success });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return Results.Problem($"Échec après toutes les tentatives : {ex.Message}");
+                throw;
             }
         });
     }

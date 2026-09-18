@@ -27,10 +27,10 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, L
         _tokenService = tokenService;
     }
 
-    public async Task<LoginResult> Handle(RefreshTokenCommand request, CancellationToken ct)
+    public async Task<LoginResult> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
     {
         var storedToken = await _db.RefreshTokens
-            .FirstOrDefaultAsync(rt => rt.Token == request.RefreshToken, ct);
+            .FirstOrDefaultAsync(rt => rt.Token == request.RefreshToken, cancellationToken);
 
         if (storedToken is null || !storedToken.IsActive)
             return new LoginResult(false, null, null, "Refresh token invalide ou expiré.");
@@ -48,7 +48,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, L
 
         var newRefreshToken = new RefreshToken(newRefreshTokenValue, user.Id, DateTime.UtcNow.AddDays(7));
         _db.RefreshTokens.Add(newRefreshToken);
-        await _db.SaveChangesAsync(ct);
+        await _db.SaveChangesAsync(cancellationToken);
 
         return new LoginResult(true, newAccessToken, newRefreshTokenValue, null);
     }

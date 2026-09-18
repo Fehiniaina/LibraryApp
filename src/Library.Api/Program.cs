@@ -23,7 +23,6 @@ using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
 using Quartz;
-using Quartz.Impl;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,18 +37,6 @@ builder.Services.AddDbContext<LibraryDbContext>((serviceProvider, options) =>
     .LogTo(Console.WriteLine, LogLevel.Information)
     .EnableSensitiveDataLogging()
     .AddInterceptors(serviceProvider.GetRequiredService<AuditInterceptor>()));
-
-// Using DbContextFactory : such as backgound services, multi-threaded applications, or factories that create services.
-//builder.Services.AddDbContextFactory<LibraryDbContext>((serviceProvider, options) => 
-//{
-//    options.UseSqlServer(
-//        builder.Configuration.GetConnectionString("LibraryDb"),
-//        sqlOptions => sqlOptions.EnableRetryOnFailure(maxRetryCount: 0)
-//    )
-//    .LogTo(Console.WriteLine, LogLevel.Information)
-//    .EnableSensitiveDataLogging()
-//    .AddInterceptors(serviceProvider.GetRequiredService<AuditInterceptor>());
-//});
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 
@@ -226,15 +213,15 @@ if (app.Environment.IsDevelopment())
 
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<LibraryDbContext>();
-    await db.Database.MigrateAsync();
+    await db.Database.MigrateAsync().ConfigureAwait(false);
 
     bool forceReset = args.Contains("--reset-seed");
-    await LibrarySeeder.SeedAsync(db, authorCount: 10000, categoryCount: 50, forceReset: forceReset);
+    await LibrarySeeder.SeedAsync(db, authorCount: 10000, categoryCount: 50, forceReset: forceReset).ConfigureAwait(false);
 
     // Seed massif SÉPARÉ — seulement si demandé explicitement, JAMAIS avec --reset-seed en même temps
     if (args.Contains("--bulk-seed"))
     {
-        await BulkVolumeSeeder.SeedLargeVolumeAsync(db, authorCount: 10000);
+        await BulkVolumeSeeder.SeedLargeVolumeAsync(db, authorCount: 10000).ConfigureAwait(false);
     }
 }
 

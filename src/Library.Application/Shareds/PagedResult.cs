@@ -1,5 +1,5 @@
-// src/Library.Application/Authors/Common/PagedResult.cs
-namespace Library.Application.Shared;
+ // src/Library.Application/Authors/Common/PagedResult.cs
+namespace Library.Application.Shareds;
 
 public sealed record PagedResult<T>
 {

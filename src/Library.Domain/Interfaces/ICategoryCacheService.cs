@@ -1,12 +1,8 @@
-﻿using Library.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Library.Domain.Interfaces;
 
-namespace Library.Domain.Interfaces
+using Library.Domain.Entities;
+
+public interface ICategoryCacheService
 {
-    public interface ICategoryCacheService
-    {
-        ValueTask<List<Category>> GetAllCategoriesAsync(CancellationToken ct);
-    }
+    ValueTask<List<Category>> GetAllCategoriesAsync(CancellationToken ct);
 }

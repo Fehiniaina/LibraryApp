@@ -3,59 +3,80 @@ using Library.Domain.Interfaces;
 using Library.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using System.Threading;
 
-namespace Library.Infrastructure.Services
+namespace Library.Infrastructure.Services;
+
+public class CategoryCacheService(LibraryDbContext db, IMemoryCache cache) : ICategoryCacheService, IDisposable
 {
-    public class CategoryCacheService : ICategoryCacheService
+    private const string CacheKey = "all-categories";
+
+    private readonly SemaphoreSlim _lock = new(1, 1);
+
+    private bool disposedValue;
+
+    public async ValueTask<List<Category>> GetAllCategoriesAsync(CancellationToken ct)
     {
-        private const string CacheKey = "all-categories";
-        private readonly LibraryDbContext _db;
-        private readonly IMemoryCache _cache;
-        private readonly SemaphoreSlim _lock = new(1, 1);
-
-        public CategoryCacheService(LibraryDbContext db, IMemoryCache cache)
+        // Cas SYNCHRONE — déjà en cache, aucune allocation Task nécessaire
+        if (cache.TryGetValue(CacheKey, out List<Category>? cached) && cached is not null)
         {
-            _db = db;
-            _cache = cache;
+            return cached; // pas d'allocation Heap — struct
         }
 
-        public async ValueTask<List<Category>> GetAllCategoriesAsync(CancellationToken ct)
+        await _lock.WaitAsync(ct);
+        try 
         {
-            // Cas SYNCHRONE — déjà en cache, aucune allocation Task nécessaire
-            if (_cache.TryGetValue(CacheKey, out List<Category>? cached) && cached is not null)
+            // 3. RE-CHECK après le verrou — un autre thread a peut-être déjà rempli le cache entre-temps
+            if (cache.TryGetValue(CacheKey, out cached) && cached is not null)
             {
-                return cached; // pas d'allocation Heap — struct
+                return cached;
             }
 
-            await _lock.WaitAsync(ct);
-            try 
-            {
-                // 3. RE-CHECK après le verrou — un autre thread a peut-être déjà rempli le cache entre-temps
-                if (_cache.TryGetValue(CacheKey, out cached) && cached is not null)
-                {
-                    return cached;
-                }
-
-                return await FetchAndCacheAsync(ct);
-            } 
-            finally 
-            { 
-                _lock.Release(); 
-            }
+            return await FetchAndCacheAsync(ct);
+        } 
+        finally 
+        { 
+            _lock.Release(); 
         }
+    }
 
-        private async Task<List<Category>> FetchAndCacheAsync(CancellationToken ct)
+    private async Task<List<Category>> FetchAndCacheAsync(CancellationToken ct)
+    {
+        var categories = await db.Categories.AsNoTracking().ToListAsync(ct);
+
+        cache.Set(CacheKey, categories, new MemoryCacheEntryOptions
         {
-            Console.WriteLine(">>> [CACHE MISS] Requête DB déclenchée...");
-            var categories = await _db.Categories.AsNoTracking().ToListAsync(ct);
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+        });
 
-            _cache.Set(CacheKey, categories, new MemoryCacheEntryOptions
+        return categories;
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
             {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-            });
+                _lock.Dispose();
+            }
 
-            return categories;
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            disposedValue = true;
         }
+    }
+
+    // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+    ~CategoryCacheService()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: false);
+    }
+
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

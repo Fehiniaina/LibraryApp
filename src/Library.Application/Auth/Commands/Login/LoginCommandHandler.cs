@@ -21,7 +21,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
         _db = db;
     }
 
-    public async Task<LoginResult> Handle(LoginCommand request, CancellationToken ct)
+    public async Task<LoginResult> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user is null)
@@ -38,7 +38,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
 
         var refreshToken = new RefreshToken(refreshTokenValue, user.Id, DateTime.UtcNow.AddDays(7));
         _db.RefreshTokens.Add(refreshToken);
-        await _db.SaveChangesAsync(ct);
+        await _db.SaveChangesAsync(cancellationToken);
 
         return new LoginResult(true, accessToken, refreshTokenValue, null);
     }

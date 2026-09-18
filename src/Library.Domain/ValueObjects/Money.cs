@@ -1,17 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Library.Domain.ValueObjects;
 
-namespace Library.Domain.ValueObjects
+public sealed record Money
 {
-    public sealed record Money(decimal Amount, string Currency)
+    public Money(decimal amount, string currency)
     {
-        public decimal Amount { get; init; } = Amount >= 0
-        ? Amount
-        : throw new ArgumentException("Le montant ne peut pas être négatif.", nameof(Amount));
+        if (amount < 0)
+        {
+            throw new ArgumentException("Le montant ne peut pas être négatif.", nameof(amount));
+        }
 
-        public string Currency { get; init; } = !string.IsNullOrWhiteSpace(Currency) && Currency.Length == 3
-            ? Currency
-            : throw new ArgumentException("La devise doit être un code ISO à 3 lettres (ex: EUR).", nameof(Currency));
+        if (!string.IsNullOrWhiteSpace(currency) && currency.Length == 3)
+        {
+            throw new ArgumentException("La devise doit être un code ISO à 3 lettres (ex: EUR).", nameof(currency));
+        }
+
+        this.Amount = amount;
+        this.Currency = currency.ToUpperInvariant();
     }
+
+    public decimal Amount { get; init; }
+
+    public string Currency { get; init; }
 }

@@ -1,24 +1,23 @@
-﻿using Library.Application.Customers.Commands.CreateCustomer;
+﻿namespace Library.Api.Endpoints;
+
+using Library.Application.Customers.Commands.CreateCustomer;
 using MediatR;
 
-namespace Library.Api.Endpoints
+internal static class CustomerEndpoints
 {
-    public static class CustomerEndpoints
+    public static void MapCustomerEndpoints(this WebApplication app)
     {
-        public static void MapCustomerEndpoints(this WebApplication app)
+        var group = app.MapGroup("/customers")
+            .WithTags("Customers")
+            .RequireAuthorization();
+
+        group.MapPost("/", async (IMediator mediator, CreateCustomerCommand command) =>
         {
-            var group = app.MapGroup("/customers")
-                .WithTags("Customers")
-                .RequireAuthorization();
+            var result = await mediator.Send(command).ConfigureAwait(false);
 
-            group.MapPost("/", async (IMediator mediator, CreateCustomerCommand command) =>
-            {
-                var result = await mediator.Send(command);
-
-                return result.Success
-                    ? Results.Created($"/customers/{result.CustomerId}", result)
-                    : Results.BadRequest(result.ErrorMessage);
-            });
-        }
+            return result.Success
+                ? Results.Created($"/customers/{result.CustomerId}", result)
+                : Results.BadRequest(result.ErrorMessage);
+        });
     }
 }

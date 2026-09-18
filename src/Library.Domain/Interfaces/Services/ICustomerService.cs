@@ -1,10 +1,9 @@
-﻿using Library.Domain.Entities;
+﻿namespace Library.Domain.Interfaces.Services;
+
+using Library.Domain.Entities;
 using Library.Domain.ValueObjects;
 
-namespace Library.Domain.Interfaces.Services
+public interface ICustomerService
 {
-    public interface ICustomerService
-    {
-        Task<Customer> CreateCustomerAsync(string name, Guid companyId, Money creditLimit, CancellationToken ct);
-    }
+    Task<Customer> CreateCustomerAsync(string name, Guid companyId, Money creditLimit, CancellationToken ct);
 }

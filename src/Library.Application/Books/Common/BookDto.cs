@@ -1,5 +1,3 @@
-using Library.Domain.ValueObjects;
-
 namespace Library.Application.Books.Common;
 
 public record BookDto(

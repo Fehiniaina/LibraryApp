@@ -2,29 +2,28 @@
 
 #nullable disable
 
-namespace Library.Infrastructure.Migrations
+namespace Library.Infrastructure.Migrations;
+
+/// <inheritdoc />
+public partial class AddRowVersionToAuthor : Migration
 {
     /// <inheritdoc />
-    public partial class AddRowVersionToAuthor : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<byte[]>(
-                name: "RowVersion",
-                table: "Authors",
-                type: "rowversion",
-                rowVersion: true,
-                nullable: false,
-                defaultValue: new byte[0]);
-        }
+        migrationBuilder.AddColumn<byte[]>(
+            name: "RowVersion",
+            table: "Authors",
+            type: "rowversion",
+            rowVersion: true,
+            nullable: false,
+            defaultValue: new byte());
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "RowVersion",
-                table: "Authors");
-        }
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(
+            name: "RowVersion",
+            table: "Authors");
     }
 }

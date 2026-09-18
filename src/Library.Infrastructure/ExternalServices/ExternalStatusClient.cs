@@ -11,7 +11,7 @@ public class ExternalStatusClient : IExternalStatusClient
 
     public async Task<bool> CheckStatusAsync(CancellationToken ct)
     {
-        var response = await _httpClient.GetAsync("500", ct); // 50% échec volontaire
+        var response = await _httpClient.GetAsync(new Uri("500"), ct); // 50% échec volontaire
         return response.IsSuccessStatusCode;
     }
 }

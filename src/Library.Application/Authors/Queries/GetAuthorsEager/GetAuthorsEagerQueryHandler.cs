@@ -13,14 +13,14 @@ public class GetAuthorsEagerQueryHandler : IRequestHandler<GetAuthorsEagerQuery,
     private readonly LibraryDbContext _db;
     public GetAuthorsEagerQueryHandler(LibraryDbContext db) => _db = db;
 
-    public async Task<List<AuthorWithBooksDto>> Handle(GetAuthorsEagerQuery request, CancellationToken ct)
+    public async Task<List<AuthorWithBooksDto>> Handle(GetAuthorsEagerQuery request, CancellationToken cancellationToken)
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
 
         var authors = await _db.Authors
             .AsNoTracking()
             .Include(a => a.Books)
-            .ToListAsync(ct);
+            .ToListAsync(cancellationToken);
 
         var result = authors.Select(a => new AuthorWithBooksDto(
             a.Id, a.FirstName, a.LastName,

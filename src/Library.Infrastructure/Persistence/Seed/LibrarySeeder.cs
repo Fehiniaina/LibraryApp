@@ -15,16 +15,12 @@ public static class LibrarySeeder
         bool forceReset = false
     )
     {
-        Console.WriteLine(">>> SeedAsync called");
-
         if (forceReset)
         {
-            Console.WriteLine(">>> Force reset requested, clearing existing data");
             await ClearAsync(db);
         }
         else if (await db.Authors.AnyAsync())
         {
-            Console.WriteLine(">>> Authors already exist, skipping seed");
             return;
         }
 
@@ -68,9 +64,7 @@ public static class LibrarySeeder
         db.Authors.AddRange(authors);
         db.Books.AddRange(books);
 
-        Console.WriteLine($">>> About to save {authors.Count} authors, {books.Count} books, {categories.Count} categories");
         await db.SaveChangesAsync();
-        Console.WriteLine(">>> SaveChangesAsync completed successfully");
     }
 
     public static async Task ClearAsync(LibraryDbContext db)

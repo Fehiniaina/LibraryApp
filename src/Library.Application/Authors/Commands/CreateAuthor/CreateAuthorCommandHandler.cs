@@ -5,17 +5,14 @@ using MediatR;
 
 namespace Library.Application.Authors.Commands.CreateAuthor;
 
-public class CreateAuthorCommandHandler : IRequestHandler<CreateAuthorCommand, Guid>
+// Primary Constructors CreateAuthorCommandHandler(LibraryDbContext db) >> (C# 12)
+public class CreateAuthorCommandHandler(LibraryDbContext db) : IRequestHandler<CreateAuthorCommand, Guid>
 {
-    private readonly LibraryDbContext _db;
-
-    public CreateAuthorCommandHandler(LibraryDbContext db) => _db = db;
-
     public async Task<Guid> Handle(CreateAuthorCommand request, CancellationToken cancellationToken)
     {
         var author = new Author(request.FirstName, request.LastName);
-        _db.Authors.Add(author);
-        await _db.SaveChangesAsync(cancellationToken);
+        db.Authors.Add(author);
+        await db.SaveChangesAsync(cancellationToken);
         return author.Id;
     }
 }
