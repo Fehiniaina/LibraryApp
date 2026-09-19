@@ -3,7 +3,7 @@
 using Library.Domain.Events.Customers;
 using Library.Infrastructure.Persistence;
 
-using MediatR;
+using MassTransit;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -44,7 +44,7 @@ public partial class OutboxProcessorService : BackgroundService
     {
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<LibraryDbContext>();
-        var publisher = scope.ServiceProvider.GetRequiredService<IPublisher>();
+        var bus = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
 
         var pendingMessages = await db.OutboxMessages
             .Where(m => m.ProcessedAt == null)
@@ -59,7 +59,7 @@ public partial class OutboxProcessorService : BackgroundService
                 var domainEvent = DeserializeEvent(message.Type, message.Content);
                 if (domainEvent is not null)
                 {
-                    await publisher.Publish(domainEvent, ct);
+                    await bus.Publish(domainEvent, ct);
                 }
 
                 message.MarkAsProcessed();
@@ -76,7 +76,7 @@ public partial class OutboxProcessorService : BackgroundService
     }
 
 #pragma warning disable CA1859 // Use concrete types when possible for improved performance
-    private static INotification? DeserializeEvent(string type, string content) => type switch
+    private static object? DeserializeEvent(string type, string content) => type switch
     {
         nameof(CustomerCreatedEvent) => JsonSerializer.Deserialize<CustomerCreatedEvent>(content),
         _ => null // type d'événement inconnu — ignoré, pourrait aussi logger un warning

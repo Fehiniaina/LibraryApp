@@ -1,0 +1,20 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0
+WORKDIR /src
+
+# Restaure les dépendances
+COPY ["src/Library.Api/Library.Api.csproj", "src/Library.Api/"]
+COPY ["src/Library.Application/Library.Application.csproj", "src/Library.Application/"]
+COPY ["src/Library.Infrastructure/Library.Infrastructure.csproj", "src/Library.Infrastructure/"]
+COPY ["src/Library.Domain/Library.Domain.csproj", "src/Library.Domain/"]
+
+RUN dotnet restore "src/Library.Api/Library.Api.csproj"
+
+# Copie le code source
+COPY . .
+
+WORKDIR /src/src/Library.Api
+
+EXPOSE 8080
+
+# dotnet watch — recompile et redémarre automatiquement à chaque modification
+ENTRYPOINT ["dotnet", "watch", "run", "--urls", "http://0.0.0.0:8080", "--no-hot-reload"]

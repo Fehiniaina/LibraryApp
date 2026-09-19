@@ -1,6 +1,6 @@
 ﻿using Library.Domain.Events.Customers;
 
-using MediatR;
+using MassTransit;
 
 using Microsoft.Extensions.Logging;
 
@@ -9,24 +9,18 @@ namespace Library.Application.Customers.EventHandlers;
 /// <summary>
 /// Documentation for LogAuditTrailHandler.
 /// </summary>
-public partial class LogAuditTrailHandler : INotificationHandler<CustomerCreatedEvent>
+public partial class LogAuditTrailHandler : IConsumer<CustomerCreatedEvent>
 {
     private readonly ILogger<LogAuditTrailHandler> _logger;
 
     public LogAuditTrailHandler(ILogger<LogAuditTrailHandler> logger) => _logger = logger;
 
-    public Task Handle(CustomerCreatedEvent notification, CancellationToken cancellationToken)
+    public Task Consume(ConsumeContext<CustomerCreatedEvent> context)
     {
-        LoggerMessage(notification.CustomerId.ToString());
-
+        LogTaskCompleted();
         return Task.CompletedTask;
     }
 
-    public void LoggerMessage(string CustomerId)
-    {
-        LogAuditTrailer(CustomerId);
-    }
-
-    [LoggerMessage(Level = LogLevel.Information, Message = ">>> [AUDIT] Customer {CustomerId} créé.")]
-    private partial void LogAuditTrailer(string CustomerId);
+    [LoggerMessage(Level = LogLevel.Information, Message = ">>> [AUDIT] Customer créé.")]
+    private partial void LogTaskCompleted();
 }

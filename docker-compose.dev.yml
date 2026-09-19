@@ -2,18 +2,28 @@
 services:
   library-api:
     build:
-      dockerfile: src/Library.Api/Dockerfile
+      context: .
+      dockerfile: src/Library.Api/Dockerfile.dev
+    ports:
+      - "5259:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
     volumes:
-      - ./src:/src/src  # bind mount — modifications de code visibles SANS rebuild complet
-    ports:
-      - "5259:8080"     # garde ton port habituel côté hôte
+      - .:/src
+      - /src/src/Library.Api/bin
+      - /src/src/Library.Api/obj
+      - /src/src/Library.Application/bin
+      - /src/src/Library.Application/obj
+      - /src/src/Library.Infrastructure/bin
+      - /src/src/Library.Infrastructure/obj
+      - /src/src/Library.Domain/bin
+      - /src/src/Library.Domain/obj
+    depends_on:
+      - sqlserver
 
   sqlserver:
     ports:
-      - "1433:1433"     # exposé pour que SSMS puisse s'y connecter directement depuis Windows
+      - "1433:1433"
 
   adminer:
     image: adminer:latest
@@ -21,7 +31,5 @@ services:
     restart: unless-stopped
     ports:
       - "8081:8080"
-    networks:
-      - libraryapp-network
     depends_on:
       - sqlserver
