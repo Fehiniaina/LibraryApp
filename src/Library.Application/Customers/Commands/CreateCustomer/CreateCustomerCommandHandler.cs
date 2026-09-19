@@ -1,5 +1,7 @@
 ﻿namespace Library.Application.Customers.Commands.CreateCustomer;
 
+using System.Text.Json;
+
 using Library.Domain.Entities;
 using Library.Domain.Events.Customers;
 using Library.Domain.Interfaces.Services;
@@ -13,13 +15,10 @@ public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerComman
 
     private readonly ICustomerService _customerService;
 
-    private readonly IPublisher _publisher;
-
-    public CreateCustomerCommandHandler(LibraryDbContext db, ICustomerService customerService, IPublisher publisher)
+    public CreateCustomerCommandHandler(LibraryDbContext db, ICustomerService customerService)
     {
         _db = db;
         _customerService = customerService;
-        _publisher = publisher;
     }
 
     public async Task<CreateCustomerResult> Handle(CreateCustomerCommand request, CancellationToken cancellationToken)
@@ -35,18 +34,21 @@ public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerComman
                     request.CreditLimit,
                     cancellationToken);
 
-            await transaction.CommitAsync(cancellationToken);
+            var domainEvent = new CustomerCreatedEvent(customer.Id, customer.Name, customer.Company.Id);
+            var outboxMessage = new OutboxMessage(
+                type: nameof(CustomerCreatedEvent),
+                content: JsonSerializer.Serialize(domainEvent));
+
+            _db.OutboxMessages.Add(outboxMessage);
+
+            await _db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken); // atomique — les DEUX ou AUCUN
         }
         catch
         {
             await transaction.RollbackAsync(cancellationToken);
             throw;
         }
-
-        // Publish event
-        await _publisher.Publish(
-            new CustomerCreatedEvent(customer.Id, customer.Name, customer.Company.Id),
-            cancellationToken);
 
         return new CreateCustomerResult(true, customer.Id, null);
     }

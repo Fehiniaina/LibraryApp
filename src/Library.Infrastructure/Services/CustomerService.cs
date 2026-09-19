@@ -22,8 +22,11 @@ public class CustomerService : ICustomerService
     public async Task<Customer> CreateCustomerAsync(string name, Guid companyId, Money creditLimit, CancellationToken ct)
     {
         var company = await _companyRepository.GetByIdAsync(companyId, ct);
+
         if (company is null)
+        {
             throw new CompanyNotFoundException(companyId);
+        }
 
         var customer = new Customer(name, company, creditLimit);
         await _customerRepository.AddAsync(customer, ct);

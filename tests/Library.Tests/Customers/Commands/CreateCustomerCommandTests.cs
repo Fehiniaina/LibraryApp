@@ -9,11 +9,7 @@ using Library.Infrastructure.Persistence.Repositories;
 using Library.Infrastructure.Services;
 using Library.Tests.TestHelpers;
 
-using MediatR;
-
 using Microsoft.EntityFrameworkCore;
-
-using Moq;
 
 namespace Library.Tests.Customers.Commands;
 
@@ -21,8 +17,6 @@ namespace Library.Tests.Customers.Commands;
 public class CreateCustomerCommandTests : IAsyncLifetime, IDisposable
 {
     private readonly SqlServerContainerFixture _fixture;
-
-    private readonly Mock<IPublisher> _publisherMock = new ();
 
     private LibraryDbContext _db = default!;
 
@@ -61,7 +55,7 @@ public class CreateCustomerCommandTests : IAsyncLifetime, IDisposable
         var companyRepository = new Repository<Company>(_db);
         var customerService = new CustomerService(customerRepository, companyRepository);
 
-        var handler = new CreateCustomerCommandHandler(_db, customerService, _publisherMock.Object);
+        var handler = new CreateCustomerCommandHandler(_db, customerService);
         var command = new CreateCustomerCommand("Customer 1", company.Id, new Money(1000, "EUR"));
 
         var result = await handler.Handle(command, CancellationToken.None);
@@ -82,7 +76,7 @@ public class CreateCustomerCommandTests : IAsyncLifetime, IDisposable
         var companyRepository = new Repository<Company>(_db);
         var customerService = new CustomerService(customerRepository, companyRepository);
 
-        var handler = new CreateCustomerCommandHandler(_db, customerService, _publisherMock.Object);
+        var handler = new CreateCustomerCommandHandler(_db, customerService);
         var command = new CreateCustomerCommand("Customer 1", nonExistentCompanyId, new Money(1000, "EUR"));
 
         var result = async () => await handler.Handle(command, CancellationToken.None);

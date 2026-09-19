@@ -9,6 +9,7 @@ using Library.Application.Common.Behaviors;
 using Library.Application.Customers.EventHandlers;
 using Library.Domain.Interfaces;
 using Library.Domain.Interfaces.Services;
+using Library.Infrastructure.BackgroundServices;
 using Library.Infrastructure.ExternalServices;
 using Library.Infrastructure.Identity;
 using Library.Infrastructure.Jobs;
@@ -212,6 +213,8 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<ICategoryCacheService, CategoryCacheService>();
+
+builder.Services.AddHostedService<OutboxProcessorService>();
 
 var app = builder.Build();
 
