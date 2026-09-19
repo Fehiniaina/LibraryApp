@@ -1,28 +1,28 @@
 // tests/Library.Tests/Domain/ValueObjects/PriceTests.cs
-using Library.Domain.ValueObjects;
 using FluentAssertions;
-using Xunit;
+
+using Library.Domain.ValueObjects;
 
 namespace Library.Tests.Domain.ValueObjects;
 
 public class PriceTests
 {
     [Fact]
-    public void Constructor_WithNegativeAmount_ThrowsArgumentException()
+    public void ConstructorWithNegativeAmountThrowsArgumentException()
     {
         var act = () => new Price(-10, "EUR");
         act.Should().Throw<ArgumentException>().WithMessage("*négatif*");
     }
 
     [Fact]
-    public void Constructor_WithInvalidCurrencyLength_ThrowsArgumentException()
+    public void ConstructorWithInvalidCurrencyLengthThrowsArgumentException()
     {
         var act = () => new Price(10, "EU");
         act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
-    public void Add_WithSameCurrency_ReturnsSum()
+    public void AddWithSameCurrencyReturnsSum()
     {
         var price1 = new Price(10, "EUR");
         var price2 = new Price(5, "EUR");
@@ -34,7 +34,7 @@ public class PriceTests
     }
 
     [Fact]
-    public void Add_WithDifferentCurrency_ThrowsInvalidOperationException()
+    public void AddWithDifferentCurrencyThrowsInvalidOperationException()
     {
         var price1 = new Price(10, "EUR");
         var price2 = new Price(5, "USD");

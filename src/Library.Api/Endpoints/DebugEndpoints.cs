@@ -1,9 +1,13 @@
+namespace Library.Api.Endpoints;
+
 using Library.Application.Authors.Common;
 using Library.Domain.Common;
+using Library.Domain.Events.Customers;
 using Library.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 
-namespace Library.Api.Endpoints;
+using MediatR;
+
+using Microsoft.EntityFrameworkCore;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Performance",
@@ -35,17 +39,13 @@ internal static class DebugEndpoints
         });
 
         // Exercice 2.1 : Écris une requête qui retourne, pour chaque auteur, son nom complet ("Prénom Nom") et le titre de son livre le plus cher.
-        group.MapGet("/exercice/2/1", async (LibraryDbContext db) => 
+        group.MapGet("/exercice/2/1", async (LibraryDbContext db) =>
         {
             return await db.Authors
                 .AsNoTracking()
                 .Select(a => new AuthorTopBookDto(
                         a.FirstName + " " + a.LastName,
-                        a.Books.Any() 
-                        ? a.Books.OrderByDescending(b => b.Price.Amount).First().Title
-                        : null
-                    )
-                )
+                        a.Books.Any() ? a.Books.OrderByDescending(b => b.Price.Amount).First().Title : null))
                 .ToListAsync()
                 .ConfigureAwait(false);
         });
@@ -80,7 +80,7 @@ internal static class DebugEndpoints
                 .Take(10)
                 .Select(a => new AuthorDto(a.Id, a.FirstName, a.LastName, a.Books.Count))
                 .ToListAsync()
-                .ConfigureAwait(false); ;
+                .ConfigureAwait(false);
         });
 
         group.MapGet("/exercice/2/5", async (LibraryDbContext db) =>
@@ -90,9 +90,15 @@ internal static class DebugEndpoints
                 .Select(a => new { FirstLetter = a.Key, Count = a.Count() })
                 .OrderBy(a => a.FirstLetter)
                 .ToListAsync()
-                .ConfigureAwait(false); ;
+                .ConfigureAwait(false);
 
             return result;
+        });
+
+        app.MapGet("/handlers", (IServiceProvider sp) =>
+        {
+            var handlers = sp.GetServices<INotificationHandler<CustomerCreatedEvent>>();
+            return handlers.Select(h => h.GetType().Name).ToList();
         });
     }
 }

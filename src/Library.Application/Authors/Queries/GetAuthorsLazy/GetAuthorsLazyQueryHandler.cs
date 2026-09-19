@@ -1,14 +1,17 @@
 // src/Library.Application/Authors/Queries/GetAuthorsLazy/GetAuthorsLazyQueryHandler.cs
+namespace Library.Application.Authors.Queries.GetAuthorsLazy;
+
 using Library.Application.Authors.Common;
 using Library.Infrastructure.Persistence;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
 
-namespace Library.Application.Authors.Queries.GetAuthorsLazy;
+using MediatR;
+
+using Microsoft.EntityFrameworkCore;
 
 public class GetAuthorsLazyQueryHandler : IRequestHandler<GetAuthorsLazyQuery, List<AuthorWithBooksDto>>
 {
     private readonly LibraryDbContext _db;
+
     public GetAuthorsLazyQueryHandler(LibraryDbContext db) => _db = db;
 
     public async Task<List<AuthorWithBooksDto>> Handle(GetAuthorsLazyQuery request, CancellationToken cancellationToken)
@@ -25,9 +28,7 @@ public class GetAuthorsLazyQueryHandler : IRequestHandler<GetAuthorsLazyQuery, L
             // Chaque accès à author.Books déclenche ICI une nouvelle requête SQL,
             // invisible à la lecture du code — c'est tout le piège du lazy loading
             result.Add(new AuthorWithBooksDto(
-                author.Id, author.FirstName, author.LastName,
-                author.Books.Select(b => b.Title).ToList()
-            ));
+                author.Id, author.FirstName, author.LastName, author.Books.Select(b => b.Title).ToList()));
         }
 
         sw.Stop();

@@ -1,15 +1,18 @@
 // src/Library.Application/Authors/Commands/CreateAuthorWithBook/CreateAuthorWithBookCommandHandler.cs
-using Library.Domain.Entities;
-using Library.Infrastructure.Persistence;
-using Library.Domain.ValueObjects;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-
 namespace Library.Application.Authors.Commands.CreateAuthorWithBook;
+
+using Library.Domain.Entities;
+using Library.Domain.ValueObjects;
+using Library.Infrastructure.Persistence;
+
+using MediatR;
+
+using Microsoft.EntityFrameworkCore;
 
 public class CreateAuthorWithBookCommandHandler : IRequestHandler<CreateAuthorWithBookCommand, CreateAuthorWithBookResult>
 {
     private readonly LibraryDbContext _db;
+
     public CreateAuthorWithBookCommandHandler(LibraryDbContext db) => _db = db;
 
     public async Task<CreateAuthorWithBookResult> Handle(CreateAuthorWithBookCommand request, CancellationToken cancellationToken)

@@ -4,7 +4,7 @@ using FluentValidation;
 
 public class CreateCustomerCommandValidator : AbstractValidator<CreateCustomerCommand>
 {
-    public CreateCustomerCommandValidator() 
+    public CreateCustomerCommandValidator()
     {
         RuleFor(x => x.Name)
             .NotEmpty()

@@ -1,13 +1,13 @@
-using Library.Domain.Interfaces;
-
 namespace Library.Api.Endpoints;
+
+using Library.Domain.Interfaces;
 
 internal static class ExternalEndpoints
 {
     public static void MapExternalEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/external").WithTags("External");
-        group.MapGet("/", async (IExternalStatusClient client) => 
+        group.MapGet("/", async (IExternalStatusClient client) =>
         {
             try
             {

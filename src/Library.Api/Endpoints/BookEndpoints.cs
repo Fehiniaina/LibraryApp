@@ -1,8 +1,9 @@
 // src/Library.Api/Endpoints/BookEndpoints.cs
-using Library.Application.Books.Queries.SearchExpensive;
-using MediatR;
-
 namespace Library.Api.Endpoints;
+
+using Library.Application.Books.Queries.SearchExpensive;
+
+using MediatR;
 
 internal static class BookEndpoints
 {

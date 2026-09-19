@@ -1,15 +1,17 @@
 // tests/Library.Tests/Authors/Commands/CreateAuthorWithBookCommandHandlerTests.cs
+using FluentAssertions;
+
 using Library.Application.Authors.Commands.CreateAuthorWithBook;
 using Library.Domain.Entities;
 using Library.Infrastructure.Persistence;
 using Library.Tests.TestHelpers;
+
 using Microsoft.EntityFrameworkCore;
-using FluentAssertions;
 
 namespace Library.Tests.Authors.Commands;
 
 [Collection("Database collection")]
-public class CreateAuthorWithBookCommandHandlerTests : IAsyncLifetime
+public class CreateAuthorWithBookCommandHandlerTests : IAsyncLifetime, IDisposable
 {
     private readonly SqlServerContainerFixture _fixture;
     private LibraryDbContext _db = default!;
@@ -23,6 +25,7 @@ public class CreateAuthorWithBookCommandHandlerTests : IAsyncLifetime
             .Options;
 
         _db = new LibraryDbContext(options);
+
         // PAS de transaction ouverte ici — le Handler gère la sienne en interne
         return Task.CompletedTask;
     }
@@ -37,7 +40,7 @@ public class CreateAuthorWithBookCommandHandlerTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Handle_WithDuplicateTitle_RollsBackAuthorCreation()
+    public async Task HandleWithDuplicateTitleRollsBackAuthorCreation()
     {
         var existingAuthor = new Author("Existing", "Author");
         _db.Authors.Add(existingAuthor);
@@ -48,7 +51,7 @@ public class CreateAuthorWithBookCommandHandlerTests : IAsyncLifetime
         var command = new CreateAuthorWithBookCommand("Nouvel", "Auteur", "Titre Unique Test", 15, "EUR");
 
         var result = await handler.Handle(command, CancellationToken.None);
-         
+
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("existe déjà");
 
@@ -57,7 +60,7 @@ public class CreateAuthorWithBookCommandHandlerTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Handle_WithValidData_CreatesAuthorAndBook()
+    public async Task HandleWithValidDataCreatesAuthorAndBook()
     {
         var handler = new CreateAuthorWithBookCommandHandler(_db);
         var command = new CreateAuthorWithBookCommand("Jean", "Valjean", "Les Misérables Test", 25, "EUR");
@@ -69,5 +72,10 @@ public class CreateAuthorWithBookCommandHandlerTests : IAsyncLifetime
 
         var bookExists = await _db.Books.AnyAsync(b => b.Title == "Les Misérables Test");
         bookExists.Should().BeTrue();
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
     }
 }

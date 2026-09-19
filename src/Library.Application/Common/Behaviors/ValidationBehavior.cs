@@ -1,8 +1,9 @@
 // src/Library.Application/Common/Behaviors/ValidationBehavior.cs
-using FluentValidation;
-using MediatR;
-
 namespace Library.Application.Common.Behaviors;
+
+using FluentValidation;
+
+using MediatR;
 
 public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>

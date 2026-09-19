@@ -6,6 +6,7 @@ using MediatR;
 public class GetAllCategoriesQueryHandler : IRequestHandler<GetAllCategoriesQuery, List<CategoryDto>>
 {
     private readonly ICategoryCacheService _categoryCacheService;
+
     public GetAllCategoriesQueryHandler(ICategoryCacheService categoryCacheService) => _categoryCacheService = categoryCacheService;
 
     public async Task<List<CategoryDto>> Handle(GetAllCategoriesQuery request, CancellationToken cancellationToken)

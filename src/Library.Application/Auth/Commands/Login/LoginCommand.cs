@@ -1,7 +1,7 @@
 // src/Library.Application/Auth/Commands/Login/LoginCommand.cs
-using MediatR;
-
 namespace Library.Application.Auth.Commands.Login;
+
+using MediatR;
 
 public record LoginCommand(string Email, string Password) : IRequest<LoginResult>;
 

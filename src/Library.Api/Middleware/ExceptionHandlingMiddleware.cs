@@ -1,14 +1,16 @@
 namespace Library.Api.Middleware;
 
 using FluentValidation;
+
 using Library.Domain.Exceptions;
+
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
 /// Middleware de gestion centralisée des exceptions HTTP.
 /// Intercepte les exceptions connues et retourne une réponse JSON structurée.
 /// </summary>
-/// 
+///
 [System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Performance",
     "CA1812:Avoid uninstantiated internal classes",
@@ -16,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 internal sealed class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
+
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
     /// <summary>
@@ -33,6 +36,7 @@ internal sealed class ExceptionHandlingMiddleware
     /// Invoque le middleware et intercepte les exceptions pour retourner une réponse JSON structurée.
     /// </summary>
     /// <param name="context">Le contexte HTTP courant.</param>
+    /// <returns>representing the asynchronous operation.</returns>
     public async Task InvokeAsync(HttpContext context)
     {
         try

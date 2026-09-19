@@ -1,15 +1,18 @@
-using Library.Infrastructure.Persistence;
+namespace Library.Application.Authors.Queries.SearchAuthors;
+
 using Library.Application.Authors.Common;
 using Library.Application.Shareds;
 using Library.Domain.Entities;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
+using Library.Infrastructure.Persistence;
 
-namespace Library.Application.Authors.Queries.SearchAuthors;
+using MediatR;
+
+using Microsoft.EntityFrameworkCore;
 
 public class SearchAuthorsQueryHandler : IRequestHandler<SearchAuthorsQuery, PagedResult<AuthorDto>>
 {
     private readonly LibraryDbContext _db;
+
     public SearchAuthorsQueryHandler(LibraryDbContext db) => _db = db;
 
     public async Task<PagedResult<AuthorDto>> Handle(SearchAuthorsQuery request, CancellationToken cancellationToken)
