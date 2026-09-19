@@ -230,13 +230,7 @@ if (app.Environment.IsDevelopment())
     await db.Database.MigrateAsync().ConfigureAwait(false);
 
     var forceReset = args.Contains("--reset-seed");
-    await LibrarySeeder.SeedAsync(db, authorCount: 10000, categoryCount: 50, forceReset: forceReset).ConfigureAwait(false);
-
-    // Seed massif SÉPARÉ — seulement si demandé explicitement, JAMAIS avec --reset-seed en même temps
-    if (args.Contains("--bulk-seed"))
-    {
-        await BulkVolumeSeeder.SeedLargeVolumeAsync(db, authorCount: 10000).ConfigureAwait(false);
-    }
+    await LibrarySeeder.SeedAsync(db, authorCount: 20, categoryCount: 50, forceReset: true);
 }
 
 app.UseAuthentication();

@@ -1,0 +1,27 @@
+# docker-compose.dev.yml
+services:
+  library-api:
+    build:
+      dockerfile: src/Library.Api/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    volumes:
+      - ./src:/src/src  # bind mount — modifications de code visibles SANS rebuild complet
+    ports:
+      - "5259:8080"     # garde ton port habituel côté hôte
+
+  sqlserver:
+    ports:
+      - "1433:1433"     # exposé pour que SSMS puisse s'y connecter directement depuis Windows
+
+  adminer:
+    image: adminer:latest
+    container_name: library-adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    networks:
+      - libraryapp-network
+    depends_on:
+      - sqlserver

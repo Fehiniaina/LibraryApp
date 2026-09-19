@@ -1,0 +1,43 @@
+services:
+  library-api:
+    build:
+      context: .
+      dockerfile: src/Library.Api/Dockerfile
+    container_name: library-api
+    depends_on:
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__LibraryDb=Server=sqlserver,1433;Database=Library;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;
+      - Jwt__SecretKey=${JWT_SECRET_KEY}
+    ports:
+      - "8080:8080"
+    networks:
+      - libraryapp-network
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: library-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${SA_PASSWORD}
+      - MSSQL_PID=Developer
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$SA_PASSWORD" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - libraryapp-network
+
+networks:
+  libraryapp-network:
+    driver: bridge
+
+volumes:
+  sqlserver-data:
