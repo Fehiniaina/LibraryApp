@@ -1,8 +1,12 @@
+using System.Text;
+
 using FluentValidation;
+
 using Library.Api.Endpoints;
 using Library.Api.Middleware;
 using Library.Application.Authors.Commands.CreateAuthor;
 using Library.Application.Common.Behaviors;
+using Library.Application.Customers.EventHandlers;
 using Library.Domain.Interfaces;
 using Library.Domain.Interfaces.Services;
 using Library.Infrastructure.ExternalServices;
@@ -13,17 +17,21 @@ using Library.Infrastructure.Persistence.Interceptors;
 using Library.Infrastructure.Persistence.Repositories;
 using Library.Infrastructure.Persistence.Seed;
 using Library.Infrastructure.Services;
+
+using MediatR;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
+
 using Quartz;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,8 +40,7 @@ builder.Services.AddSingleton<AuditInterceptor>(); // singleton
 builder.Services.AddDbContext<LibraryDbContext>((serviceProvider, options) =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("LibraryDb"),
-        sqlOptions => sqlOptions.EnableRetryOnFailure(maxRetryCount: 0)
-    )
+        sqlOptions => sqlOptions.EnableRetryOnFailure(maxRetryCount: 0))
     .LogTo(Console.WriteLine, LogLevel.Information)
     .EnableSensitiveDataLogging()
     .AddInterceptors(serviceProvider.GetRequiredService<AuditInterceptor>()));
@@ -77,16 +84,19 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
-        ClockSkew = TimeSpan.Zero // évite une tolérance de temps par défaut de 5min — best practice pour les tokens courts
+        ClockSkew = TimeSpan.Zero, // évite une tolérance de temps par défaut de 5min — best practice pour les tokens courts
     };
 });
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddSingleton<INotificationPublisher, ResilientNotificationPublisher>();
+
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(CreateAuthorCommand).Assembly);
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+    cfg.NotificationPublisherType = typeof(ResilientNotificationPublisher);
 });
 
 builder.Services.AddValidatorsFromAssembly(typeof(CreateAuthorCommand).Assembly);
@@ -101,12 +111,12 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Entre 'Bearer {ton token}'",
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
-        Scheme = "Bearer"
+        Scheme = "Bearer",
     });
 
     options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
-        [new OpenApiSecuritySchemeReference("Bearer", document)] = new List<string>()
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = new List<string>(),
     });
 });
 
@@ -121,10 +131,11 @@ builder.Services.AddQuartz(q =>
         .ForJob(jobKey)
         .WithIdentity("RefreshTokenCleanupJob-trigger")
         .WithCronSchedule("0 0 3 * * ?"));
-    //q.AddTrigger(opts => opts
-    //.ForJob(jobKey)
-    //.WithIdentity("RefreshTokenCleanupJob-trigger")
-    //.WithSimpleSchedule(x => x
+
+    // q.AddTrigger(opts => opts
+    // .ForJob(jobKey)
+    // .WithIdentity("RefreshTokenCleanupJob-trigger")
+    // .WithSimpleSchedule(x => x
     //    .WithInterval(TimeSpan.FromSeconds(30))
     //    .RepeatForever()));
 });
@@ -158,7 +169,7 @@ builder.Services.AddHttpClient<IExternalStatusClient, ExternalStatusClient>((ser
         {
             Console.WriteLine($">>> [RETRY] Tentative {args.AttemptNumber + 1} après échec ({args.Outcome.Result?.StatusCode})");
             return ValueTask.CompletedTask;
-        }
+        },
     });
 
     pipeline.AddTimeout(TimeSpan.FromSeconds(5));
@@ -181,7 +192,7 @@ builder.Services.AddHttpClient<IExternalStatusClient, ExternalStatusClient>((ser
         {
             Console.WriteLine(">>> [CIRCUIT BREAKER] Circuit FERMÉ — reprise normale");
             return ValueTask.CompletedTask;
-        }
+        },
     });
 });
 
@@ -215,7 +226,7 @@ if (app.Environment.IsDevelopment())
     var db = scope.ServiceProvider.GetRequiredService<LibraryDbContext>();
     await db.Database.MigrateAsync().ConfigureAwait(false);
 
-    bool forceReset = args.Contains("--reset-seed");
+    var forceReset = args.Contains("--reset-seed");
     await LibrarySeeder.SeedAsync(db, authorCount: 10000, categoryCount: 50, forceReset: forceReset).ConfigureAwait(false);
 
     // Seed massif SÉPARÉ — seulement si demandé explicitement, JAMAIS avec --reset-seed en même temps

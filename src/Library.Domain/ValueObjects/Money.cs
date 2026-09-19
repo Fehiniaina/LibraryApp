@@ -9,7 +9,7 @@ public sealed record Money
             throw new ArgumentException("Le montant ne peut pas être négatif.", nameof(amount));
         }
 
-        if (!string.IsNullOrWhiteSpace(currency) && currency.Length == 3)
+        if (string.IsNullOrWhiteSpace(currency) || currency.Length != 3)
         {
             throw new ArgumentException("La devise doit être un code ISO à 3 lettres (ex: EUR).", nameof(currency));
         }

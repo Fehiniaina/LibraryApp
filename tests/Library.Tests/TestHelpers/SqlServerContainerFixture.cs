@@ -1,8 +1,9 @@
 // tests/Library.Tests/TestHelpers/SqlServerContainerFixture.cs
 using Library.Infrastructure.Persistence;
+
 using Microsoft.EntityFrameworkCore;
+
 using Testcontainers.MsSql;
-using Xunit;
 
 namespace Library.Tests.TestHelpers;
 

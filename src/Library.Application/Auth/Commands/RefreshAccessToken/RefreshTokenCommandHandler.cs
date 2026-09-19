@@ -1,10 +1,12 @@
 // RefreshTokenCommandHandler.cs
 using Library.Application.Auth.Commands.Login;
-using Library.Domain.Interfaces;
 using Library.Domain.Entities;
+using Library.Domain.Interfaces;
 using Library.Infrastructure.Identity;
 using Library.Infrastructure.Persistence;
+
 using MediatR;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,8 +21,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, L
     public RefreshTokenCommandHandler(
         LibraryDbContext db,
         UserManager<ApplicationUser> userManager,
-        ITokenService tokenService
-    )
+        ITokenService tokenService)
     {
         _db = db;
         _userManager = userManager;
@@ -33,11 +34,15 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, L
             .FirstOrDefaultAsync(rt => rt.Token == request.RefreshToken, cancellationToken);
 
         if (storedToken is null || !storedToken.IsActive)
+        {
             return new LoginResult(false, null, null, "Refresh token invalide ou expiré.");
+        }
 
         var user = await _userManager.FindByIdAsync(storedToken.UserId);
         if (user is null)
+        {
             return new LoginResult(false, null, null, "Utilisateur introuvable.");
+        }
 
         // Rotation — révoque l'ancien, en émet un nouveau (best practice : usage unique)
         storedToken.Revoke();

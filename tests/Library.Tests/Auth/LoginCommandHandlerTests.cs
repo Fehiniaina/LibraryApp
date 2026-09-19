@@ -1,20 +1,22 @@
 // tests/Library.Tests/Auth/LoginCommandHandlerTests.cs
+using FluentAssertions;
+
 using Library.Application.Auth.Commands.Login;
 using Library.Domain.Interfaces;
 using Library.Infrastructure.Identity;
 using Library.Infrastructure.Persistence;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+
 using Moq;
-using FluentAssertions;
-using Xunit;
 
 namespace Library.Tests.Auth;
 
 public class LoginCommandHandlerTests
 {
     [Fact]
-    public async Task Handle_WithInvalidEmail_ReturnsGenericErrorMessage()
+    public async Task HandleWithInvalidEmailReturnsGenericErrorMessage()
     {
         // Arrange
         var options = new DbContextOptionsBuilder<LibraryDbContext>()

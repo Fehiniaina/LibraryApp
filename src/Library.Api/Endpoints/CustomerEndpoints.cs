@@ -1,6 +1,7 @@
 ﻿namespace Library.Api.Endpoints;
 
 using Library.Application.Customers.Commands.CreateCustomer;
+
 using MediatR;
 
 internal static class CustomerEndpoints

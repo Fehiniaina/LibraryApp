@@ -6,7 +6,6 @@ using Library.Tests.TestHelpers;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Xunit;
 
 namespace Library.Tests.Authors.Commands;
 
@@ -14,7 +13,6 @@ namespace Library.Tests.Authors.Commands;
 public class ConcurrencyTests : IAsyncLifetime
 {
     private readonly SqlServerContainerFixture _fixture;
-    private IDbContextTransaction _transaction = default!;
     private LibraryDbContext _db = default!;
     private SqlConnection _connection = default!;
 
@@ -41,7 +39,7 @@ public class ConcurrencyTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ConcurrentUpdate_WithStaleRowVersion_ThrowsDbUpdateConcurrencyException()
+    public async Task ConcurrentUpdateWithStaleRowVersionThrowsDbUpdateConcurrencyException()
     {
         // Arrange
         var author = new Author("Isaac", "Asimov");

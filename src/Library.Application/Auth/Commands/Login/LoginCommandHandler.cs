@@ -1,12 +1,12 @@
 // LoginCommandHandler.cs
+namespace Library.Application.Auth.Commands.Login;
+
 using Library.Domain.Entities;
 using Library.Domain.Interfaces;
 using Library.Infrastructure.Identity;
 using Library.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-
-namespace Library.Application.Auth.Commands.Login;
 
 public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
 {
@@ -25,12 +25,16 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user is null)
+        {
             return new LoginResult(false, null, null, "Email ou mot de passe incorrect.");
+        }
 
         // CheckPasswordAsync gère la vérification du hash + le lockout automatiquement
         var isPasswordValid = await _userManager.CheckPasswordAsync(user, request.Password);
         if (!isPasswordValid)
+        {
             return new LoginResult(false, null, null, "Email ou mot de passe incorrect.");
+        }
 
         var roles = await _userManager.GetRolesAsync(user);
         var accessToken = _tokenService.GenerateAccessToken(user.Id, user.Email!, roles);

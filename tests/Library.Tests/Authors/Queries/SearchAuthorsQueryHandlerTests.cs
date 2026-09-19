@@ -1,17 +1,18 @@
 // tests/Library.Tests/Authors/Queries/SearchAuthorsQueryHandlerIntegrationTests.cs
+using FluentAssertions;
+
 using Library.Application.Authors.Queries.SearchAuthors;
 using Library.Domain.Entities;
 using Library.Domain.ValueObjects;
 using Library.Infrastructure.Persistence;
 using Library.Tests.TestHelpers;
+
 using Microsoft.EntityFrameworkCore;
-using FluentAssertions;
-using Xunit;
 
 namespace Library.Tests.Authors.Queries;
 
 [Collection("Database collection")]
-public class SearchAuthorsQueryHandlerIntegrationTests : IAsyncLifetime
+public class SearchAuthorsQueryHandlerIntegrationTests : IAsyncLifetime, IDisposable
 {
     private readonly SqlServerContainerFixture _fixture;
     private LibraryDbContext _db = default!;
@@ -39,7 +40,7 @@ public class SearchAuthorsQueryHandlerIntegrationTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Handle_WithMinBookCountFilter_ExcludesAuthorsWithFewerBooks()
+    public async Task HandleWithMinBookCountFilterExcludesAuthorsWithFewerBooks()
     {
         // Arrange
         var authorWithBooks = new Author("Victor", "Hugo");
@@ -61,7 +62,7 @@ public class SearchAuthorsQueryHandlerIntegrationTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Handle_WithLastNameFilter_IsCaseInsensitive()
+    public async Task HandleWithLastNameFilterIsCaseInsensitive()
     {
         // Arrange — teste EXACTEMENT le comportement qu'InMemory ne pouvait pas valider
         _db.Authors.Add(new Author("Victor", "HUGO"));
@@ -75,5 +76,10 @@ public class SearchAuthorsQueryHandlerIntegrationTests : IAsyncLifetime
 
         // Assert — grâce à la collation Latin1_General_CI_AS (Case Insensitive), ça doit matcher
         result.TotalCount.Should().Be(1);
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
     }
 }

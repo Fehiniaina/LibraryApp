@@ -1,7 +1,7 @@
 // src/Library.Application/Auth/Commands/Logout/LogoutCommandValidator.cs
-using FluentValidation;
-
 namespace Library.Application.Auth.Commands.Logout;
+
+using FluentValidation;
 
 public class LogoutCommandValidator : AbstractValidator<LogoutCommand>
 {

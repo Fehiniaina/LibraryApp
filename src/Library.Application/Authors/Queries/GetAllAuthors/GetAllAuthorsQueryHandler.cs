@@ -1,9 +1,11 @@
+namespace Library.Application.Authors.Queries.GetAllAuthors;
+
 using Library.Application.Authors.Common;
 using Library.Infrastructure.Persistence;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
 
-namespace Library.Application.Authors.Queries.GetAllAuthors;
+using MediatR;
+
+using Microsoft.EntityFrameworkCore;
 
 public class GetAllAuthorsQueryHandler : IRequestHandler<GetAllAuthorsQuery, List<AuthorDto>>
 {

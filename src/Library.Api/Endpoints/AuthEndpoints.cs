@@ -1,11 +1,11 @@
-
-namespace Library.Api.Endpoints;
-
 using Library.Application.Auth.Commands.Login;
+using Library.Application.Auth.Commands.Logout;
 using Library.Application.Auth.Commands.RefreshAccessToken;
 using Library.Application.Auth.Commands.Register;
-using Library.Application.Auth.Commands.Logout;
+
 using MediatR;
+
+namespace Library.Api.Endpoints;
 
 internal static class AuthEndpoints
 {

@@ -1,3 +1,5 @@
+namespace Library.Api.Endpoints;
+
 using Library.Application.Authors.Commands.CreateAuthor;
 using Library.Application.Authors.Commands.CreateAuthorWithBook;
 using Library.Application.Authors.Commands.UpdateAuthor;
@@ -7,9 +9,8 @@ using Library.Application.Authors.Queries.GetAuthorExplicit;
 using Library.Application.Authors.Queries.GetAuthorsEager;
 using Library.Application.Authors.Queries.GetAuthorsLazy;
 using Library.Application.Authors.Queries.SearchAuthors;
-using MediatR;
 
-namespace Library.Api.Endpoints;
+using MediatR;
 
 internal static class AuthorEndpoints
 {

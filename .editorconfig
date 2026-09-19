@@ -5,12 +5,22 @@ root = true
 indent_style = space
 indent_size = 4
 
+# Séparer les usings système des autres
+dotnet_sort_system_directives_first = true
+
+# Séparer les groupes par une ligne vide
+dotnet_separate_import_directive_groups = true
+
 # Namespaces — style file-scoped (modern C#)
 csharp_style_namespace_declarations = file_scoped:warning
 
 # var préféré quand le type est évident
 csharp_style_var_for_built_in_types = true:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
+
+# IDE0070 — désactive la suggestion de générer Equals/GetHashCode
+# Inutile sur les records qui les génèrent automatiquement
+dotnet_diagnostic.IDE0070.severity = none
 
 # Membres privés avec underscore
 dotnet_naming_rule.private_fields_should_be_camel_case.symbols = private_fields
@@ -28,8 +38,18 @@ dotnet_diagnostic.CA1062.severity = none
 dotnet_diagnostic.SA1101.severity = none
 dotnet_diagnostic.SA1309.severity = none
 dotnet_diagnostic.CS1591.severity = none
+dotnet_diagnostic.SA1009.severity = none
+dotnet_diagnostic.SA1200.severity = none
+dotnet_diagnostic.SA1313.severity = none
 dotnet_diagnostic.SA1600.severity = none
 dotnet_diagnostic.SA1633.severity = none
+dotnet_diagnostic.CA1031.severity = none
 dotnet_diagnostic.CA1819.severity = none
 dotnet_diagnostic.CA1849.severity = none
 dotnet_diagnostic.CA2007.severity = none
+
+# VSSpell001: Spell Check
+dotnet_diagnostic.VSSpell001.severity = none
+
+[Program.cs]
+dotnet_diagnostic.SA1516.severity = none

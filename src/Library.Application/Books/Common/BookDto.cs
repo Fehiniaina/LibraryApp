@@ -1,6 +1,6 @@
 namespace Library.Application.Books.Common;
 
-public record BookDto(
+public record BookDTO(
     Guid Id,
     string Title,
     string AuthorFullName,

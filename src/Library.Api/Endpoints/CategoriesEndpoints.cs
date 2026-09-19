@@ -1,6 +1,7 @@
 ﻿namespace Library.Api.Endpoints;
 
 using Library.Application.Categories.Queries;
+
 using MediatR;
 
 internal static class CategoriesEndpoints
@@ -11,7 +12,7 @@ internal static class CategoriesEndpoints
             .WithTags("Categories")
             .RequireAuthorization();
 
-        group.MapGet("/", async (IMediator mediator) => 
+        group.MapGet("/", async (IMediator mediator) =>
         {
             await mediator.Send(new GetAllCategoriesQuery()).ConfigureAwait(false);
         });
