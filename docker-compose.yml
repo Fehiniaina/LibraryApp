@@ -24,8 +24,12 @@ services:
       dockerfile: src/Library.Api/Dockerfile
     container_name: library-api
     depends_on:
-      - sqlserver
-      - rabbitmq
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__LibraryDb=Server=sqlserver,1433;Database=Library;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;
@@ -87,6 +91,15 @@ services:
         condition: service_healthy
     ports:
       - "5000:8080"   # LE SEUL port désormais exposé publiquement pour l'API
+    networks:
+      - libraryapp-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: library-jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
     networks:
       - libraryapp-network
 

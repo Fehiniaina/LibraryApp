@@ -11,6 +11,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddSingleton<IEmailSender, FakeEmailSender>();
 
@@ -35,6 +38,15 @@ builder.Services.AddMassTransit(x =>
         cfg.ConfigureEndpoints(context);
     });
 });
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("Library.NotificationService"))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddSource("MassTransit")
+            .AddOtlpExporter(options => options.Endpoint = new Uri("http://jaeger:4317"));
+    });
 
 var host = builder.Build();
 await host.RunAsync();
