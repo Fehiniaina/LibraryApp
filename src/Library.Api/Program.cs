@@ -286,7 +286,12 @@ if (app.Environment.IsDevelopment())
     await LibrarySeeder.SeedAsync(db, authorCount: 20, categoryCount: 50, forceReset: forceReset);
 }
 
-app.MapHealthChecks("/health", new HealthCheckOptions
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = _ => false, // AUCUN check exécuté — juste "le processus répond-il ?"
+});
+
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
     ResponseWriter = async (context, report) =>
     {

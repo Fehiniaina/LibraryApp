@@ -30,8 +30,13 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__LibraryDb=Server=sqlserver,1433;Database=Library;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;
       - Jwt__SecretKey=${JWT_SECRET_KEY}
+    healthcheck:
+      test: curl -f http://localhost:8080/health/live || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     ports:
-      - "8080:8080"
       - "8082:8082"
     networks:
       - libraryapp-network
@@ -67,10 +72,23 @@ services:
       rabbitmq:
         condition: service_healthy
       library-api:
-        condition: service_started
+        condition: service_healthy
     networks:
       - libraryapp-network
     restart: unless-stopped
+
+  library-gateway:
+    build:
+      context: .
+      dockerfile: src/Library.Gateway/Dockerfile
+    container_name: library-gateway
+    depends_on:
+      library-api:
+        condition: service_healthy
+    ports:
+      - "5000:8080"   # LE SEUL port désormais exposé publiquement pour l'API
+    networks:
+      - libraryapp-network
 
 networks:
   libraryapp-network:
