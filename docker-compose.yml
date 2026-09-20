@@ -1,3 +1,4 @@
+# docker-compose.yml
 services:
   rabbitmq:
     image: rabbitmq:3-management
@@ -53,6 +54,18 @@ services:
       - sqlserver-data:/var/opt/mssql
     networks:
       - libraryapp-network
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: src/Library.NotificationService/Dockerfile
+    container_name: library-notification-service
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - libraryapp-network
+    restart: unless-stopped
 
 networks:
   libraryapp-network:
