@@ -5,6 +5,7 @@ using FluentValidation;
 
 using Library.Api.Endpoints;
 using Library.Api.Middleware;
+using Library.Api.Services;
 using Library.Application.Authors.Commands.CreateAuthor;
 using Library.Application.Common.Behaviors;
 using Library.Application.Customers.EventHandlers;
@@ -254,9 +255,23 @@ builder.Services.AddHealthChecks()
     .AddRabbitMQ(name: "rabbitmq")
     .AddCheck<OutboxHealthCheck>("outbox-processing");
 
+// Setting up gRPC
+builder.Services.AddGrpc();
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // Port HTTP/1.1 classique
+    options.ListenAnyIP(8080, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1);
+
+    // Port DÉDIÉ HTTP/2 — pour gRPC uniquement
+    options.ListenAnyIP(8082, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2);
+});
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+app.MapGrpcService<CustomerGrpcService>();
 
 if (app.Environment.IsDevelopment())
 {

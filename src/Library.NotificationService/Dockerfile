@@ -6,6 +6,7 @@ WORKDIR /src
 
 # Copie SEULEMENT le .csproj d'abord — optimisation de cache Docker layer
 COPY ["src/Library.NotificationService/Library.NotificationService.csproj", "src/Library.NotificationService/"]
+COPY ["src/Library.Domain/Library.Domain.csproj", "src/Library.Domain/"]
 
 RUN dotnet restore "src/Library.NotificationService/Library.NotificationService.csproj"
 
