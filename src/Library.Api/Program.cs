@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 
 using FluentValidation;
 
@@ -11,6 +12,7 @@ using Library.Domain.Interfaces;
 using Library.Domain.Interfaces.Services;
 using Library.Infrastructure.BackgroundServices;
 using Library.Infrastructure.ExternalServices;
+using Library.Infrastructure.HealthChecks;
 using Library.Infrastructure.Identity;
 using Library.Infrastructure.Jobs;
 using Library.Infrastructure.Persistence;
@@ -24,6 +26,7 @@ using MassTransit;
 using MediatR;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -35,6 +38,8 @@ using Polly.CircuitBreaker;
 using Polly.Retry;
 
 using Quartz;
+
+using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -218,6 +223,7 @@ builder.Services.AddScoped<ICategoryCacheService, CategoryCacheService>();
 
 builder.Services.AddHostedService<OutboxProcessorService>();
 
+// Setting up mass transit services
 builder.Services.AddMassTransit(x =>
 {
     x.UsingRabbitMq((context, cfg) =>
@@ -229,6 +235,24 @@ builder.Services.AddMassTransit(x =>
         });
     });
 });
+
+// Setting up health check for rabbitmq
+builder.Services.AddSingleton<IConnection>(sp =>
+{
+    var factory = new ConnectionFactory
+    {
+        Uri = new Uri(builder.Configuration.GetConnectionString("RabbitMQ") ?? "amqp://guest:guest@rabbitmq:5672"),
+        AutomaticRecoveryEnabled = true,
+    };
+
+    return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+});
+
+// Setting up health check
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<LibraryDbContext>(name: "sqlserver")
+    .AddRabbitMQ(name: "rabbitmq")
+    .AddCheck<OutboxHealthCheck>("outbox-processing");
 
 var app = builder.Build();
 
@@ -246,6 +270,28 @@ if (app.Environment.IsDevelopment())
     var forceReset = args.Contains("--reset-seed");
     await LibrarySeeder.SeedAsync(db, authorCount: 20, categoryCount: 50, forceReset: forceReset);
 }
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+
+        var response = new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description,
+                duration = e.Value.Duration.TotalMilliseconds,
+            }),
+        };
+
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+    },
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
