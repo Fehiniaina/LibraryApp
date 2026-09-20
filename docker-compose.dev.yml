@@ -1,0 +1,35 @@
+# docker-compose.dev.yml
+services:
+  library-api:
+    build:
+      context: .
+      dockerfile: src/Library.Api/Dockerfile.dev
+    ports:
+      - "5259:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - .:/src
+      - /src/src/Library.Api/bin
+      - /src/src/Library.Api/obj
+      - /src/src/Library.Application/bin
+      - /src/src/Library.Application/obj
+      - /src/src/Library.Infrastructure/bin
+      - /src/src/Library.Infrastructure/obj
+      - /src/src/Library.Domain/bin
+      - /src/src/Library.Domain/obj
+    depends_on:
+      - sqlserver
+
+  sqlserver:
+    ports:
+      - "1433:1433"
+
+  adminer:
+    image: adminer:latest
+    container_name: library-adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      - sqlserver

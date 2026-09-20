@@ -63,6 +63,7 @@ public static class LibrarySeeder
 
         db.Authors.AddRange(authors);
         db.Books.AddRange(books);
+        db.Companies.AddRange(companies);
 
         await db.SaveChangesAsync();
     }

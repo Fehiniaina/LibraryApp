@@ -14,7 +14,7 @@ internal static class CategoriesEndpoints
 
         group.MapGet("/", async (IMediator mediator) =>
         {
-            await mediator.Send(new GetAllCategoriesQuery()).ConfigureAwait(false);
+            return await mediator.Send(new GetAllCategoriesQuery());
         });
     }
 }

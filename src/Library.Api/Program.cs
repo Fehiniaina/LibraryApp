@@ -19,6 +19,8 @@ using Library.Infrastructure.Persistence.Repositories;
 using Library.Infrastructure.Persistence.Seed;
 using Library.Infrastructure.Services;
 
+using MassTransit;
+
 using MediatR;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -216,6 +218,18 @@ builder.Services.AddScoped<ICategoryCacheService, CategoryCacheService>();
 
 builder.Services.AddHostedService<OutboxProcessorService>();
 
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("rabbitmq", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+    });
+});
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -230,13 +244,7 @@ if (app.Environment.IsDevelopment())
     await db.Database.MigrateAsync().ConfigureAwait(false);
 
     var forceReset = args.Contains("--reset-seed");
-    await LibrarySeeder.SeedAsync(db, authorCount: 10000, categoryCount: 50, forceReset: forceReset).ConfigureAwait(false);
-
-    // Seed massif SÉPARÉ — seulement si demandé explicitement, JAMAIS avec --reset-seed en même temps
-    if (args.Contains("--bulk-seed"))
-    {
-        await BulkVolumeSeeder.SeedLargeVolumeAsync(db, authorCount: 10000).ConfigureAwait(false);
-    }
+    await LibrarySeeder.SeedAsync(db, authorCount: 20, categoryCount: 50, forceReset: forceReset);
 }
 
 app.UseAuthentication();
@@ -249,5 +257,6 @@ app.MapExternalEndpoints();
 app.MapDebugEndpoints();
 app.MapCustomerEndpoints();
 app.MapCategoriesEndpoints();
+app.MapCompaniesEndpoints();
 
 app.Run();
