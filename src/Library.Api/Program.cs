@@ -34,6 +34,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
@@ -266,6 +269,22 @@ builder.WebHost.ConfigureKestrel(options =>
     // Port DÉDIÉ HTTP/2 — pour gRPC uniquement
     options.ListenAnyIP(8082, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2);
 });
+
+// Setting up OpenTelemetry
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("Library.Api")) // nom du service dans les traces
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddAspNetCoreInstrumentation() // instrumente AUTOMATIQUEMENT chaque requête HTTP entrante
+            .AddHttpClientInstrumentation() // instrumente AUTOMATIQUEMENT tes appels IHttpClientFactory sortants
+            .AddEntityFrameworkCoreInstrumentation() // instrumente AUTOMATIQUEMENT chaque requête SQL EF Core
+            .AddSource("MassTransit") // capture les Spans générés par MassTransit (publish/consume)
+            .AddOtlpExporter(options =>
+            {
+                options.Endpoint = new Uri("http://jaeger:4317"); // où envoyer les traces
+            });
+    });
 
 var app = builder.Build();
 
