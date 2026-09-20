@@ -61,6 +61,8 @@ services:
       context: .
       dockerfile: src/Library.NotificationService/Dockerfile
     container_name: library-notification-service
+    environment:
+      - SimulateEmailFailure=true
     depends_on:
       rabbitmq:
         condition: service_healthy
