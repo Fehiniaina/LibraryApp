@@ -32,6 +32,7 @@ services:
       - Jwt__SecretKey=${JWT_SECRET_KEY}
     ports:
       - "8080:8080"
+      - "8082:8082"
     networks:
       - libraryapp-network
 
@@ -63,6 +64,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      library-api:
+        condition: service_started
     networks:
       - libraryapp-network
     restart: unless-stopped

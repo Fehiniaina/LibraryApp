@@ -8,9 +8,29 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.36.2" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.83.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.84.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="MassTransit" Version="8.5.7" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.7" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
   </ItemGroup>
 
+  <!-- Library.NotificationService.csproj -->
+  <ItemGroup>
+	<Protobuf Include="..\Library.Api\Protos\customer.proto" GrpcServices="Client" Link="Protos\customer.proto" />
+  </ItemGroup>
+
+ <ItemGroup>
+	<None Update="appsettings.json">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+  </ItemGroup>
+
+ <ItemGroup>
+   <ProjectReference Include="..\Library.Domain\Library.Domain.csproj" />
+ </ItemGroup>
 </Project>

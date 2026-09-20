@@ -47,6 +47,7 @@ dotnet_diagnostic.CA1031.severity = none
 dotnet_diagnostic.CA1819.severity = none
 dotnet_diagnostic.CA1849.severity = none
 dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.CA1812.severity = none
 
 # VSSpell001: Spell Check
 dotnet_diagnostic.VSSpell001.severity = none
