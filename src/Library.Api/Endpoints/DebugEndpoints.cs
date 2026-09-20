@@ -1,12 +1,8 @@
 namespace Library.Api.Endpoints;
 
-using Bogus;
-
 using Library.Application.Authors.Common;
 using Library.Domain.Common;
-using Library.Domain.Entities;
 using Library.Domain.Events.Customers;
-using Library.Domain.ValueObjects;
 using Library.Infrastructure.Persistence;
 
 using MassTransit;
@@ -99,60 +95,10 @@ internal static class DebugEndpoints
             return result;
         });
 
-        app.MapGet("/handlers", (IServiceProvider sp) =>
+        group.MapGet("/handlers", (IServiceProvider sp) =>
         {
             var handlers = sp.GetServices<IConsumer<CustomerCreatedEvent>>();
             return handlers.Select(h => h.GetType().Name).ToList();
-        });
-
-        app.MapGet("/init-company", async (LibraryDbContext db) =>
-        {
-            int categoryCount = 10;
-            int authorCount = 20;
-
-            // Catégories
-            var categoryFaker = new Faker<Category>()
-                .CustomInstantiator(f => new Category(f.Commerce.Categories(1)[0]));
-
-            var categories = categoryFaker.Generate(categoryCount)
-                .DistinctBy(c => c.Name) // évite les doublons de noms générés
-                .ToList();
-
-            db.Categories.AddRange(categories);
-
-            // Auteurs + leurs livres
-            var authorFaker = new Faker<Author>()
-                .CustomInstantiator(f => new Author(f.Name.FirstName(), f.Name.LastName()));
-
-            var authors = authorFaker.Generate(authorCount);
-
-            var bookFaker = new Faker<Book>()
-                .CustomInstantiator(f => new Book(
-                    f.Commerce.ProductName(),
-                    f.PickRandom(authors),
-                    new Price(f.Random.Decimal(5, 50), "EUR")));
-
-            var books = bookFaker.Generate(authorCount * 10); // ~10 livres par auteur en moyenne
-
-            foreach (var book in books)
-            {
-                var randomCategories = new Faker().PickRandom(categories, new Faker().Random.Int(1, 3));
-                foreach (var category in randomCategories)
-                {
-                    book.AddCategory(category);
-                }
-            }
-
-            // Create fake data for company.
-            var companyFaker = new Faker<Company>()
-                .CustomInstantiator(f => new Company(f.Name.JobTitle()));
-            var companies = companyFaker.Generate(10);
-
-            db.Authors.AddRange(authors);
-            db.Books.AddRange(books);
-            db.Companies.AddRange(companies);
-
-            await db.SaveChangesAsync();
         });
     }
 }
