@@ -14,7 +14,7 @@ using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = Host.CreateApplicationBuilder(args); // Generic host sans le Web
 builder.Services.AddSingleton<IEmailSender, FakeEmailSender>();
 
 builder.Services.AddMassTransit(x =>

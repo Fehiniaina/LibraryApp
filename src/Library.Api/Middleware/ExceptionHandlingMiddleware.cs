@@ -41,27 +41,27 @@ internal sealed class ExceptionHandlingMiddleware
     {
         try
         {
-            await _next(context).ConfigureAwait(false);
+            await _next(context);
         }
         catch (ValidationException ex)
         {
-            await HandleValidationExceptionAsync(context, ex).ConfigureAwait(false);
+            await HandleValidationExceptionAsync(context, ex);
         }
         catch (CompanyNotFoundException ex)
         {
-            await HandleKnownExceptionAsync(context, StatusCodes.Status404NotFound, ex.Message).ConfigureAwait(false);
+            await HandleKnownExceptionAsync(context, StatusCodes.Status404NotFound, ex.Message);
         }
         catch (DbUpdateConcurrencyException)
         {
-            await HandleKnownExceptionAsync(context, StatusCodes.Status409Conflict, "Conflit de concurrence.").ConfigureAwait(false);
+            await HandleKnownExceptionAsync(context, StatusCodes.Status409Conflict, "Conflit de concurrence.");
         }
         catch (InvalidOperationException)
         {
-            await HandleKnownExceptionAsync(context, StatusCodes.Status400BadRequest, "Requête invalide.").ConfigureAwait(false);
+            await HandleKnownExceptionAsync(context, StatusCodes.Status400BadRequest, "Requête invalide.");
         }
         catch (ArgumentException ex)
         {
-            await HandleKnownExceptionAsync(context, StatusCodes.Status400BadRequest, ex.Message).ConfigureAwait(false);
+            await HandleKnownExceptionAsync(context, StatusCodes.Status400BadRequest, ex.Message);
         }
     }
 
@@ -90,6 +90,6 @@ internal sealed class ExceptionHandlingMiddleware
             title,
             status = statusCode,
             traceId = context.TraceIdentifier,
-        }).ConfigureAwait(false);
+        });
     }
 }
