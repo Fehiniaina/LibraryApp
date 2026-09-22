@@ -8,6 +8,9 @@ services:
       - "5259:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__LibraryDb=Server=sqlserver,1433;Database=Library;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;
+      - Jwt__SecretKey=${JWT_SECRET_KEY}
+      - ConnectionStrings__RabbitMQ=amqp://guest:guest@rabbitmq:5672
     volumes:
       - .:/src
       - /src/src/Library.Api/bin
@@ -19,17 +22,66 @@ services:
       - /src/src/Library.Domain/bin
       - /src/src/Library.Domain/obj
     depends_on:
-      - sqlserver
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - libraryapp-network
 
   sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: library-sqlserver-dev
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${SA_PASSWORD}
+      - MSSQL_PID=Developer
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$SA_PASSWORD" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     ports:
       - "1433:1433"
+    volumes:
+      - sqlserver-data-dev:/var/opt/mssql
+    networks:
+      - libraryapp-network
 
-  adminer:
-    image: adminer:latest
-    container_name: library-adminer
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: library-rabbitmq-dev
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - libraryapp-network
+
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: library-cloudbeaver-dev
     restart: unless-stopped
     ports:
-      - "8081:8080"
+      - "7080:8978"
     depends_on:
-      - sqlserver
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - libraryapp-network
+
+networks:
+  libraryapp-network:
+    driver: bridge
+
+volumes:
+  sqlserver-data-dev:

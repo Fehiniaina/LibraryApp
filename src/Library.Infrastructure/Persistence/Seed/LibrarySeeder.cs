@@ -1,8 +1,15 @@
 // src/Library.Infrastructure/Persistence/Seed/LibrarySeeder.cs
 using Bogus;
+
 using Library.Domain.Entities;
 using Library.Domain.ValueObjects;
+
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+
+using OpenIddict.Abstractions;
+
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Library.Infrastructure.Persistence.Seed;
 
@@ -75,5 +82,27 @@ public static class LibrarySeeder
         await db.Books.ExecuteDeleteAsync();
         await db.Authors.ExecuteDeleteAsync();
         await db.Categories.ExecuteDeleteAsync();
+    }
+
+    public static async Task CreateOpenIdDictAsync(IServiceScope scope, string clientId, string clientSecret)
+    {
+        var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
+
+        if (await applicationManager.FindByClientIdAsync("playground-worker") is null)
+        {
+            var descriptor = new OpenIddictApplicationDescriptor
+            {
+                ClientId = clientId,
+                ClientSecret = clientSecret,
+                Permissions =
+                {
+                    OpenIddictConstants.Permissions.Endpoints.Token,
+                    OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
+                    Permissions.Prefixes.Scope + "authors.read"
+                }
+            };
+
+            await applicationManager.CreateAsync(descriptor);
+        }
     }
 }

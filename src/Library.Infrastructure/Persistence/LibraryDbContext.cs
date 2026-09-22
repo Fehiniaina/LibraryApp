@@ -21,5 +21,6 @@ public class LibraryDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(typeof(LibraryDbContext).Assembly);
+        builder.UseOpenIddict();
     }
 }
