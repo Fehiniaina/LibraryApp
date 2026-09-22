@@ -2,6 +2,7 @@
 
 using MediatR;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using Playground.Mvc.Filters;
@@ -11,6 +12,7 @@ namespace Playground.Mvc.Controllers;
 
 [TypeFilter(typeof(TimingActionFilter))]
 [TypeFilter(typeof(TrackerLoggingFilter))]
+[Authorize]
 public class AuthorsController : Controller
 {
     private readonly IMediator _mediator;

@@ -4,6 +4,7 @@ using Library.Application.Authors.Queries.SearchAuthors;
 
 using MediatR;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using Playground.Mvc.Filters;
@@ -14,6 +15,7 @@ namespace Playground.Mvc.Controllers;
 [TypeFilter(typeof(WrapJsonResultFilter))]
 [TypeFilter(typeof(BlockNegativePriceFilter))]
 [TypeFilter(typeof(TrimStringsActionFilter))]
+[Authorize]
 [ApiController]
 public class AuthorsApiController : ControllerBase
 {
