@@ -66,6 +66,11 @@ builder.Services.AddOptions<LibraryApiOptions>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services.AddOptions<OAuthClientOptions>()
+    .Bind(builder.Configuration.GetSection(OAuthClientOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 // Enregistrement - Type Client + Delegating Handler + Polly
 builder.Services.AddTransient<LoggingDelegatingHandler>();
 

@@ -22,7 +22,6 @@ public partial class AuthorSyncJob : IJob
     {
         var count = await _client.GetAuthorCountAsync(context.CancellationToken);
         OnLogMessage(count, DateTime.UtcNow);
-
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = ">> [Quartz Job] {Count} auteurs synchronisés à {Time}")]

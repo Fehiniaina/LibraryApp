@@ -5,6 +5,7 @@ using FluentValidation;
 
 using Library.Api.Endpoints;
 using Library.Api.Middleware;
+using Library.Api.Options;
 using Library.Api.Services;
 using Library.Application.Authors.Commands.CreateAuthor;
 using Library.Application.Common.Behaviors;
@@ -286,6 +287,41 @@ builder.Services.AddOpenTelemetry()
             });
     });
 
+builder.Services.AddOptions<OAuthClientOptions>()
+    .Bind(builder.Configuration.GetSection(OAuthClientOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddOpenIddict()
+    .AddCore(options =>
+    {
+        options.UseEntityFrameworkCore().UseDbContext<LibraryDbContext>();
+    })
+    .AddServer(options =>
+    {
+        options.SetTokenEndpointUris("/connect/token");
+
+        options.AllowClientCredentialsFlow();
+
+        options.AddDevelopmentEncryptionCertificate()
+               .AddDevelopmentSigningCertificate();
+
+        options.UseAspNetCore()
+               .EnableTokenEndpointPassthrough();
+
+        options.RegisterScopes("authors.read");
+
+        if (builder.Environment.IsDevelopment())
+        {
+            options.UseAspNetCore().DisableTransportSecurityRequirement();
+        }
+    })
+    .AddValidation(options =>
+    {
+        options.UseLocalServer(); // valide les tokens émis par CE MÊME serveur
+        options.UseAspNetCore();
+    });
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -303,6 +339,9 @@ if (app.Environment.IsDevelopment())
 
     var forceReset = args.Contains("--reset-seed");
     await LibrarySeeder.SeedAsync(db, authorCount: 20, categoryCount: 50, forceReset: forceReset);
+
+    var oauthOptions = scope.ServiceProvider.GetRequiredService<IOptions<OAuthClientOptions>>().Value;
+    await LibrarySeeder.CreateOpenIdDictAsync(scope, oauthOptions.ClientId, oauthOptions.ClientSecret);
 }
 
 app.MapHealthChecks("/health/live", new HealthCheckOptions
@@ -343,5 +382,7 @@ app.MapDebugEndpoints();
 app.MapCustomerEndpoints();
 app.MapCategoriesEndpoints();
 app.MapCompaniesEndpoints();
+app.MapServiceEndpoints();
+app.MapTokenEndpoints();
 
 app.Run();
