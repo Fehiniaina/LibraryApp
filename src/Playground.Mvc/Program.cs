@@ -9,8 +9,19 @@ using Library.Infrastructure.Services;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
+using Playground.Mvc.Clients;
+using Playground.Mvc.Handlers;
+using Playground.Mvc.Jobs;
+using Playground.Mvc.Options;
 using Playground.Mvc.Services;
+
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.Retry;
+
+using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +60,61 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<IRequestTracker, RequestTracker>();
+
+builder.Services.AddOptions<LibraryApiOptions>()
+    .Bind(builder.Configuration.GetSection(LibraryApiOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+// Enregistrement - Type Client + Delegating Handler + Polly
+builder.Services.AddTransient<LoggingDelegatingHandler>();
+
+builder.Services.AddHttpClient<ILibraryApiSyncClient, LibraryApiSyncClient>((sp, client) =>
+{
+    var options = sp.GetRequiredService<IOptions<LibraryApiOptions>>().Value;
+    client.BaseAddress = new Uri(options.BaseAddress);
+    client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+})
+.AddHttpMessageHandler<LoggingDelegatingHandler>()
+.AddResilienceHandler("library-api-pipeline", pipeline =>
+{
+    pipeline.AddRetry(new RetryStrategyOptions<HttpResponseMessage>
+    {
+        MaxRetryAttempts = 3,
+        Delay = TimeSpan.FromSeconds(1),
+        BackoffType = DelayBackoffType.Exponential,
+        ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+            .Handle<HttpRequestException>()
+            .HandleResult(r => !r.IsSuccessStatusCode)
+    });
+
+    pipeline.AddTimeout(TimeSpan.FromSeconds(5));
+
+    pipeline.AddCircuitBreaker(new CircuitBreakerStrategyOptions<HttpResponseMessage>
+    {
+        FailureRatio = 0.5,
+        SamplingDuration = TimeSpan.FromSeconds(20),
+        MinimumThroughput = 4,
+        BreakDuration = TimeSpan.FromSeconds(15),
+        ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+            .Handle<HttpRequestException>()
+            .HandleResult(r => !r.IsSuccessStatusCode)
+    });
+});
+
+// Setup config Quartz.Net
+builder.Services.AddQuartz(q =>
+{
+    var jobKey = new JobKey("AuthorSyncJob");
+    q.AddJob<AuthorSyncJob>(opts => opts.WithIdentity(jobKey));
+
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("AuthorSyncJob-trigger")
+        .WithSimpleSchedule(x => x.WithInterval(TimeSpan.FromSeconds(45)).RepeatForever()));
+});
+
+builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
 
 var app = builder.Build();
 
