@@ -1,0 +1,22 @@
+﻿@using Library.Application.Authors.Common
+@model List<AuthorDto>
+
+<h1>Auteurs</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nom complet</th>
+            <th>Nombre de livres</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var author in Model)
+        {
+            <tr>
+                <td>@author.FirstName @author.LastName</td>
+                <td>@author.BookCount</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -9,6 +9,7 @@
     <Project Path="src/Library.Gateway/Library.Gateway.csproj" />
     <Project Path="src/Library.Infrastructure/Library.Infrastructure.csproj" />
     <Project Path="src/Library.NotificationService/Library.NotificationService.csproj" />
+    <Project Path="src/Playground.Mvc/Playground.Mvc.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Library.Tests/Library.Tests.csproj" />
